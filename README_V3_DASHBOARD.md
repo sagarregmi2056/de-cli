@@ -26,13 +26,32 @@ Standalone dashboard that does not modify existing `web_app.py` routes.
 
 ```bash
 cd cli-app
+export WEB_APP_V3_SECRET_KEY='<LONG_RANDOM_SECRET>'
+export WEB_APP_V3_AUTH_EMAIL='you@example.com'
+export WEB_APP_V3_AUTH_PASSWORD_HASH='<werkzeug_password_hash>'
+# optional (defaults to false for local http):
+# export WEB_APP_V3_COOKIE_SECURE=1
 python3 web_app_v3.py
 ```
 
 Open: `http://localhost:8001`
 
+Generate a password hash:
+
+```bash
+python3 -c "from werkzeug.security import generate_password_hash as g; print(g('your_password_here'))"
+```
+
+You can also configure multiple users:
+
+```bash
+export WEB_APP_V3_AUTH_USERS='{"alice@example.com":"<hash1>","bob@example.com":"<hash2>"}'
+```
+
 ## Routes
 
+- `GET|POST /login` -> Login screen
+- `POST /logout` -> End session
 - `GET /` -> Markets tab
 - `GET /analytics` -> Analytics tab
 - `GET|POST /predict` -> URL prediction tab

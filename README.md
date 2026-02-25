@@ -140,6 +140,9 @@ See `.env.example` for all available options.
 - `INVESTMENT_AMOUNT` - Default: 1.0
 - `POLYMARKET_VOLUME_MIN` - Default: 500
 - `POLYMARKET_END_DATE_MIN_DAYS` - Default: 1
+- `PREDICTION_API_TIMEOUT_SECS` - Default: 20 (increase on slow VMs)
+- `PREDICTION_API_RETRIES` - Default: 2 (total attempts = retries + 1)
+- `PREDICTION_API_RETRY_BACKOFF_SECS` - Default: 1.5
 - `POLYMARKET_PRIVATE_KEY` - For trading
 - `POLYMARKET_FUNDER_ADDRESS` - For trading
 - `POLYMARKET_SIGNATURE_TYPE` - Default: 2
@@ -181,4 +184,3 @@ python main.py help
 - **Market Data**: Stored in MongoDB (title, description, structured data, predictions)
 - **Investment Results**: Saved to MongoDB after each investment
 - **Error Handling**: All errors are caught and displayed gracefully
-

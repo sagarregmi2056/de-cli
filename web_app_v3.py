@@ -12,11 +12,15 @@ Goals:
 from __future__ import annotations
 
 import datetime as dt
+import hmac
 import json
+import os
+import secrets
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, redirect, render_template, request, session, url_for
+from werkzeug.security import check_password_hash
 
 from db_v3 import get_db_v3
 from gamma_client import (
@@ -39,6 +43,77 @@ RESOLVED_LOW = 0.03
 GAMMA_API_BASE = "https://gamma-api.polymarket.com"
 
 _clients: Dict[str, Any] = {}
+
+
+def _strtobool(value: Any, default: bool = False) -> bool:
+    if value is None:
+        return default
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _env_int(name: str, default: int) -> int:
+    try:
+        return int(os.getenv(name, str(default)))
+    except (TypeError, ValueError):
+        return default
+
+
+def _is_password_hash(value: str) -> bool:
+    return value.startswith(("pbkdf2:", "scrypt:", "argon2:"))
+
+
+def _load_auth_users() -> Dict[str, str]:
+    users: Dict[str, str] = {}
+
+    users_json = (os.getenv("WEB_APP_V3_AUTH_USERS") or "").strip()
+    if users_json:
+        try:
+            parsed = json.loads(users_json)
+            if isinstance(parsed, dict):
+                for email, pwd in parsed.items():
+                    email_norm = str(email or "").strip().lower()
+                    password = str(pwd or "")
+                    if email_norm and password:
+                        users[email_norm] = password
+        except Exception:
+            pass
+
+    single_email = (os.getenv("WEB_APP_V3_AUTH_EMAIL") or "").strip().lower()
+    single_password_hash = (os.getenv("WEB_APP_V3_AUTH_PASSWORD_HASH") or "").strip()
+    single_password = os.getenv("WEB_APP_V3_AUTH_PASSWORD")
+    if single_email:
+        if single_password_hash:
+            users[single_email] = single_password_hash
+        elif single_password:
+            users[single_email] = single_password
+
+    return users
+
+
+AUTH_ENABLED = _strtobool(os.getenv("WEB_APP_V3_AUTH_ENABLED"), default=True)
+AUTH_USERS = _load_auth_users()
+
+secret_key = os.getenv("WEB_APP_V3_SECRET_KEY")
+if not secret_key:
+    secret_key = secrets.token_hex(32)
+    print(
+        "WARNING: WEB_APP_V3_SECRET_KEY is not set. Using an ephemeral key; "
+        "all sessions will reset when the server restarts."
+    )
+
+app.config["SECRET_KEY"] = secret_key
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = _strtobool(os.getenv("WEB_APP_V3_COOKIE_SECURE"), default=False)
+app.config["PERMANENT_SESSION_LIFETIME"] = dt.timedelta(
+    hours=max(1, min(168, _env_int("WEB_APP_V3_SESSION_HOURS", 12)))
+)
+
+if AUTH_ENABLED and not AUTH_USERS:
+    raise RuntimeError(
+        "Auth is enabled but no users configured. Set WEB_APP_V3_AUTH_USERS or "
+        "WEB_APP_V3_AUTH_EMAIL + WEB_APP_V3_AUTH_PASSWORD_HASH (or WEB_APP_V3_AUTH_PASSWORD)."
+    )
 
 
 def _get_clients() -> Tuple[OneVsOneGeminiClient, TeamsGeminiClient, EdgeCaseGeminiClient]:
@@ -869,6 +944,71 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
     }
 
 
+def _is_safe_next_url(next_url: str) -> bool:
+    return next_url.startswith("/") and not next_url.startswith("//")
+
+
+def _verify_login(email: str, password: str) -> bool:
+    expected = AUTH_USERS.get(email.strip().lower())
+    if not expected:
+        return False
+    if _is_password_hash(expected):
+        try:
+            return check_password_hash(expected, password)
+        except Exception:
+            return False
+    return hmac.compare_digest(expected, password)
+
+
+@app.before_request
+def _auth_guard() -> Optional[Any]:
+    if not AUTH_ENABLED:
+        return None
+
+    endpoint = request.endpoint or ""
+    if endpoint in {"login", "logout", "static"}:
+        return None
+    if session.get("auth_email"):
+        return None
+
+    if request.path.startswith("/api/"):
+        return jsonify({"ok": False, "error": "authentication_required"}), 401
+
+    next_url = request.full_path or request.path
+    if next_url.endswith("?"):
+        next_url = next_url[:-1]
+    return redirect(url_for("login", next=next_url))
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if not AUTH_ENABLED:
+        return redirect(url_for("markets_tab"))
+
+    error = None
+    next_url = (request.args.get("next") or request.form.get("next") or "/").strip() or "/"
+    if not _is_safe_next_url(next_url):
+        next_url = "/"
+
+    if request.method == "POST":
+        email = (request.form.get("email") or "").strip().lower()
+        password = request.form.get("password") or ""
+        if _verify_login(email, password):
+            session.clear()
+            session.permanent = True
+            session["auth_email"] = email
+            return redirect(next_url)
+        error = "Invalid email or password."
+
+    return render_template("login_v3.html", error=error, next_url=next_url)
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 def _render_dashboard(
     active_tab: str,
     markets: List[Dict[str, Any]],
@@ -896,6 +1036,8 @@ def _render_dashboard(
         prediction_view=prediction_view,
         prediction_error=prediction_error,
         recent_predictions=recent,
+        auth_enabled=AUTH_ENABLED,
+        auth_email=session.get("auth_email"),
     )
 
 
@@ -984,4 +1126,5 @@ def api_auto_resolve():
 
 if __name__ == "__main__":
     # Dev-only entrypoint: `python3 cli-app/web_app_v3.py`
-    app.run(host="0.0.0.0", port=8001, debug=True)
+    debug_mode = _strtobool(os.getenv("WEB_APP_V3_DEBUG"), default=False)
+    app.run(host="0.0.0.0", port=8001, debug=debug_mode)

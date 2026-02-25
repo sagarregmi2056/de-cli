@@ -79,6 +79,19 @@
         flex-wrap: wrap;
       }
 
+      .auth-chip {
+        border: 1px solid rgba(148, 163, 184, 0.5);
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.8rem;
+        color: #cbd5f5;
+        background: rgba(15, 23, 42, 0.6);
+      }
+
+      .logout-form {
+        margin: 0;
+      }
+
       .btn {
         border: 1px solid transparent;
         border-radius: 999px;
@@ -637,6 +650,12 @@
             </p>
           </div>
           <div class="actions">
+            {% if auth_enabled and auth_email %}
+            <span class="auth-chip">{{ auth_email }}</span>
+            <form class="logout-form" method="POST" action="/logout">
+              <button class="btn btn-secondary" type="submit">Logout</button>
+            </form>
+            {% endif %}
             <button class="btn btn-primary" id="resolveBtn">Auto Resolve Now</button>
             <a class="btn btn-secondary" href="/?auto_resolve=1">Refresh</a>
           </div>
