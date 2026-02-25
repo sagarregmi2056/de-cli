@@ -92,6 +92,9 @@ def _load_auth_users() -> Dict[str, str]:
 
 AUTH_ENABLED = _strtobool(os.getenv("WEB_APP_V3_AUTH_ENABLED"), default=True)
 AUTH_USERS = _load_auth_users()
+WEB_APP_V3_GEMINI_USE_SEARCH = _strtobool(os.getenv("WEB_APP_V3_GEMINI_USE_SEARCH"), default=True)
+WEB_APP_V3_GEMINI_MAX_RETRIES = max(1, min(3, _env_int("WEB_APP_V3_GEMINI_MAX_RETRIES", 3)))
+WEB_APP_V3_EDGE_CASE_ENABLED = _strtobool(os.getenv("WEB_APP_V3_EDGE_CASE_ENABLED"), default=False)
 
 secret_key = os.getenv("WEB_APP_V3_SECRET_KEY")
 if not secret_key:
@@ -118,9 +121,18 @@ if AUTH_ENABLED and not AUTH_USERS:
 
 def _get_clients() -> Tuple[OneVsOneGeminiClient, TeamsGeminiClient, EdgeCaseGeminiClient]:
     if not _clients:
-        _clients["one_v_one"] = OneVsOneGeminiClient()
-        _clients["teams"] = TeamsGeminiClient()
-        _clients["edge_case"] = EdgeCaseGeminiClient()
+        _clients["one_v_one"] = OneVsOneGeminiClient(
+            use_search=WEB_APP_V3_GEMINI_USE_SEARCH,
+            max_retries=WEB_APP_V3_GEMINI_MAX_RETRIES,
+        )
+        _clients["teams"] = TeamsGeminiClient(
+            use_search=WEB_APP_V3_GEMINI_USE_SEARCH,
+            max_retries=WEB_APP_V3_GEMINI_MAX_RETRIES,
+        )
+        _clients["edge_case"] = EdgeCaseGeminiClient(
+            use_search=WEB_APP_V3_GEMINI_USE_SEARCH,
+            max_retries=WEB_APP_V3_GEMINI_MAX_RETRIES,
+        )
     return _clients["one_v_one"], _clients["teams"], _clients["edge_case"]
 
 
@@ -805,7 +817,9 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         structured = teams_client.generate_text(event_json)
         market_type = "teams"
 
-    edge_case = edge_case_client.generate_text(event_json) or {}
+    edge_case = {}
+    if WEB_APP_V3_EDGE_CASE_ENABLED:
+        edge_case = edge_case_client.generate_text(event_json) or {}
     structured = enrich_structured_event(structured)
 
     payload = _build_prediction_payload(structured)

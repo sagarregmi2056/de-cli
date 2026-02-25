@@ -20,7 +20,7 @@ from google.genai.types import (
 from config import GEMINI_API_KEY, DEFAULT_MODEL_NAME
 
 
-def _extract_json(text: str) -> Dict[str, Any]:
+def _extract_json(text: Any) -> Dict[str, Any]:
     """
     Minimal JSON extractor similar to DEBot.utils.extract_json.
     Assumes the model returns plain JSON (as instructed in prompts).
@@ -28,6 +28,8 @@ def _extract_json(text: str) -> Dict[str, Any]:
     import json
 
     try:
+        if not isinstance(text, str) or not text.strip():
+            raise ValueError("Empty response text from Gemini")
         start = text.find("{")
         end = text.rfind("}") + 1
         if start != -1 and end > start:
@@ -65,9 +67,12 @@ class BaseGeminiClient:
         self.use_search = use_search
         self.max_retries = max_retries
 
-    def generate_text(self, event_data: str, max_retries: int = 3) -> Dict[str, Any]:
+    def generate_text(self, event_data: str, max_retries: Optional[int] = None) -> Dict[str, Any]:
+        effective_retries = max_retries if max_retries is not None else self.max_retries
+        if effective_retries < 1:
+            effective_retries = 1
         try:
-            for attempt in range(max_retries):
+            for attempt in range(effective_retries):
                 prompt = self._build_contents(event_data)
                 config = GenerateContentConfig(tools=self.tools) if self.tools else None
 
@@ -76,6 +81,12 @@ class BaseGeminiClient:
                     contents=prompt,
                     config=config,
                 )
+                response_text = getattr(response, "text", None)
+                if not isinstance(response_text, str) or not response_text.strip():
+                    if attempt + 1 < effective_retries:
+                        print(f"Empty Gemini response on attempt {attempt + 1}, retrying...")
+                        continue
+                    raise ValueError("Gemini returned an empty response.")
                 candidate = response.candidates[0] if response.candidates else None
                 metadata = getattr(candidate, "grounding_metadata", None)
                 web_queries_raw = (
@@ -85,7 +96,7 @@ class BaseGeminiClient:
 
                 if len(web_queries) > 0 or not self.use_search:
                     print("Web Search Queries Used")
-                    return _extract_json(response.text)
+                    return _extract_json(response_text)
                 else:
                     print(f"No web search on attempt {attempt + 1}, retrying...")
 
@@ -252,4 +263,3 @@ class EdgeCaseGeminiClient(BaseGeminiClient):
 
         If no edge cases are found after RIGOROUS search, return "has_edge_case": false and "risk_level": "None".
         """
-

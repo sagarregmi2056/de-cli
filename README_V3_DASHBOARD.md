@@ -31,6 +31,10 @@ export WEB_APP_V3_AUTH_EMAIL='you@example.com'
 export WEB_APP_V3_AUTH_PASSWORD_HASH='<werkzeug_password_hash>'
 # optional (defaults to false for local http):
 # export WEB_APP_V3_COOKIE_SECURE=1
+# VM stability options for /predict:
+# export WEB_APP_V3_GEMINI_USE_SEARCH=0
+# export WEB_APP_V3_GEMINI_MAX_RETRIES=1
+# export WEB_APP_V3_EDGE_CASE_ENABLED=0
 python3 web_app_v3.py
 ```
 
