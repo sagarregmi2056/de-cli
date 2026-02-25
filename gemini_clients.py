@@ -90,6 +90,10 @@ class BaseGeminiClient:
                     print(f"No web search on attempt {attempt + 1}, retrying...")
 
             return None
+        except SystemExit as e:
+            # Some third-party internals may call sys.exit() on transport failures.
+            # Convert to a normal exception so web workers don't crash.
+            raise Exception(f"Gemini client triggered SystemExit: {e}") from e
         except Exception as e:
             raise Exception(f"Error generating text: {e}") from e
 
@@ -248,5 +252,4 @@ class EdgeCaseGeminiClient(BaseGeminiClient):
 
         If no edge cases are found after RIGOROUS search, return "has_edge_case": false and "risk_level": "None".
         """
-
 
