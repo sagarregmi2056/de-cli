@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Predicted Polymarket Events</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #0b1120;
+        color: #e5e7eb;
+      }
+      header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #1f2937;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: #f9fafb;
+      }
+      .filters {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .filters a {
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        border: 1px solid #374151;
+        text-decoration: none;
+        color: #9ca3af;
+        font-size: 0.85rem;
+      }
+      .filters a.active {
+        background: #2563eb;
+        color: #f9fafb;
+        border-color: #2563eb;
+      }
+      main {
+        padding: 1.5rem 2rem 2rem;
+      }
+      .empty {
+        padding: 2rem;
+        text-align: center;
+        color: #6b7280;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1rem;
+      }
+      .card {
+        border-radius: 0.75rem;
+        border: 1px solid #1f2937;
+        background: radial-gradient(circle at top, #111827, #020617);
+        padding: 1rem 1.1rem;
+      }
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin: 0 0 0.25rem;
+      }
+      .card-meta {
+        font-size: 0.75rem;
+        color: #9ca3af;
+      }
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 9999px;
+        border: 1px solid #4b5563;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+      }
+      .badge-teams {
+        border-color: #10b981;
+        color: #6ee7b7;
+      }
+      .badge-1v1 {
+        border-color: #3b82f6;
+        color: #93c5fd;
+      }
+      .badge-invested {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+        color: #bbf7d0;
+      }
+      .badge-risk-high {
+        border-color: #ef4444;
+        color: #fecaca;
+      }
+      .badge-risk-medium {
+        border-color: #f97316;
+        color: #fed7aa;
+      }
+      .section {
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+      }
+      .section h4 {
+        margin: 0 0 0.25rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #e5e7eb;
+      }
+      .section p {
+        margin: 0.05rem 0;
+      }
+      .muted {
+        color: #6b7280;
+      }
+      .link {
+        color: #60a5fa;
+        text-decoration: none;
+        font-size: 0.78rem;
+      }
+      .link:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Predicted Polymarket Events</h1>
+      <nav class="filters">
+        <a
+          href="/?status=all"
+          class="{{ 'active' if status_filter == 'all' else '' }}"
+          >All predicted</a
+        >
+        <a
+          href="/?status=predicted"
+          class="{{ 'active' if status_filter == 'predicted' else '' }}"
+          >Predicted (not invested)</a
+        >
+        <a
+          href="/?status=invested"
+          class="{{ 'active' if status_filter == 'invested' else '' }}"
+          >Invested</a
+        >
+        <a href="/predictions">Get Predictions</a>
+      </nav>
+    </header>
+    <main>
+      {% if not markets %}
+      <div class="empty">
+        No markets found for this filter yet. Run the CLI pipeline to generate
+        predictions.
+      </div>
+      {% else %}
+      <div class="grid">
+        {% for m in markets %}
+        <article class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">{{ m.title }}</h2>
+              <div class="card-meta">
+                {{ m.end_date or "End date unknown" }} ·
+                <span class="muted">{{ m.slug }}</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="badge {% if m.type == 'teams' %}badge-teams{% else %}badge-1v1{% endif %}">
+                {{ m.type }}
+              </div>
+              {% if m.investment %}
+              <div class="badge badge-invested" style="margin-top: 0.25rem;">
+                Invested
+              </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="section">
+            <h4>Prediction</h4>
+            {% if m.winner_name %}
+            <p>
+              Winner:
+              <strong>{{ m.winner_name }}</strong>
+              ({{ "%.2f" | format(m.winner_prob) }}%)
+            </p>
+            {% else %}
+            <p class="muted">No winner summary available.</p>
+            {% endif %}
+          </div>
+
+          <div class="section">
+            <h4>Risk / Edge Case</h4>
+            {% if m.edge_case_risk_level and m.edge_case_risk_level != 'None' %}
+            <p>
+              <span
+                class="badge {% if m.edge_case_risk_level == 'High' %}badge-risk-high{% elif m.edge_case_risk_level == 'Medium' %}badge-risk-medium{% endif %}"
+              >
+                {{ m.edge_case_risk_level }}
+              </span>
+            </p>
+            {% else %}
+            <p class="muted">No significant edge case detected.</p>
+            {% endif %}
+          </div>
+
+          <div class="section">
+            <h4>Investment</h4>
+            {% if m.investment %}
+            <p>
+              Invested on:
+              <strong>{{ m.investment.winner_name }}</strong>
+              ({{ "%.2f" | format(m.investment.winner_prob) }}%)
+            </p>
+            <p>Amount: ${{ "%.2f" | format(m.investment.amount or 0) }}</p>
+            {% else %}
+            <p class="muted">No investment recorded for this market.</p>
+            {% endif %}
+          </div>
+
+          <div class="section">
+            {% if m.slug %}
+            <a
+              class="link"
+              href="https://polymarket.com/event/{{ m.slug }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open on Polymarket →
+            </a>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </main>
+  </body>
+</html>
+
+

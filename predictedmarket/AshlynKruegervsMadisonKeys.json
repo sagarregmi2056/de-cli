@@ -1,0 +1,2273 @@
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England Cricket Team",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": "unknown",
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "England"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": "unknown",
+        "birth_place": "Dunedin, Otago",
+        "birth_country": "New Zealand"
+      }
+    },
+    {
+      "team_name": "Nepal Cricket Team",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": "unknown",
+        "birth_place": "Nawalparasi, Nepal",
+        "birth_country": "Nepal"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": "unknown",
+        "birth_place": "Herston, Queensland",
+        "birth_country": "Australia"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "England vs Nepal",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India"
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": false,
+  "risk_level": "None",
+  "edge_cases": [],
+  "market_implication": "The match is expected to proceed as scheduled. No significant disruptions or technicalities identified that would cause an unexpected resolution (e.g., Void, N/A, Push).",
+  "meta": {
+    "checked_sources": [
+      "Google Search (injury reports for England and Nepal cricket teams)",
+      "Google Search (cancellation rumors for T20 World Cup England vs Nepal)",
+      "Google Search (weather forecast for Wankhede Stadium, Mumbai)",
+      "Cricket news outlets (CricTracker, Financial Express, Cricket Addictor, The Island, The Kathmandu Post, Sportskeeda, Durham CCC, Crictoday, Edgbaston Stadium, Hollywoodbets Sports Blog, Yardbarker, Cricket Counsel)"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England Cricket Team",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": null,
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "England",
+        "lat": 53.8684021,
+        "lon": -1.9020456,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "Europe/London"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": null,
+        "birth_place": "Dunedin, Otago",
+        "birth_country": "New Zealand",
+        "lat": -45.8740984,
+        "lon": 170.5035755,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Pacific/Auckland"
+      }
+    },
+    {
+      "team_name": "Nepal Cricket Team",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": null,
+        "birth_place": "Nawalparasi, Nepal",
+        "birth_country": "Nepal"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": null,
+        "birth_place": "Herston, Queensland",
+        "birth_country": "Australia",
+        "lat": -27.4496625,
+        "lon": 153.0237294,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Australia/Brisbane"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "England vs Nepal",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Harry Cherrington Brook",
+      "birth_date": "1999-02-22",
+      "birth_time": null,
+      "birth_place": "Keighley, Yorkshire",
+      "birth_country": "England",
+      "gender": "unknown",
+      "lat": 53.8684021,
+      "lon": -1.9020456,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "Europe/London"
+    },
+    {
+      "name": "Stuart Grant Law",
+      "birth_date": "1968-10-18",
+      "birth_time": null,
+      "birth_place": "Herston, Queensland",
+      "birth_country": "Australia",
+      "gender": "unknown",
+      "lat": -27.4496625,
+      "lon": 153.0237294,
+      "lat_dir": "S",
+      "lon_dir": "E",
+      "birth_timezone": "Australia/Brisbane"
+    }
+  ],
+  "event": {
+    "event_name": "England vs Nepal",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 31,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Harry Cherrington Brook",
+    "Details": "1999-2-22 12:0 England, Keighley, Yorkshire  53.8684021(N) -1.9020456(W) Europe/London",
+    "MyPoints": "New Points Parameter 1: 72.375  TransitPoint: 63.75 [************** Paramerer 1 Starts ************** , SUN total: 15.5, MOON total: 13.0, MERCURY total: 4.625, VENUS total: 4.5, MARS total: 15.5, JUPITER total: 6.25, SATURN total: 13.0, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  15.0,  mar  20.0,  mer  3.75,  jup  6.0,  ven  4.5,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "68.06",
+    "planetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Exalted in the 12th house.",
+      "Mars is in Neutral Sign in the 7th house.",
+      "Saturn is in Debilitated in the 1st house.",
+      "Jupiter is in Own Sign in the 12th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mars, lord of the 1st house, is placed in the 7th house (Neutral).",
+      "Sun, lord of the 5th house, is placed in the 11th house (Enemy).",
+      "Moon, lord of the 4th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 1st and 8th house, is placed in the 7th house (Neutral).",
+      "Mercury, lord of the 3rd and 6th house, is placed in the 11th house (Neutral).",
+      "Venus, lord of the 2nd and 7th house, is placed in the 12th house (Exalted).",
+      "Saturn, lord of the 10th and 11th house, is placed in the 1st house (Debilitated).",
+      "Jupiter, lord of the 9th and 12th house, is placed in the 12th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 10th house.",
+      "Moon is in Neutral Sign in the 7th house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Friendly Sign in the 11th house.",
+      "Mars is in Exalted in the 10th house.",
+      "Saturn is in Neutral Sign in the 12th house.",
+      "Jupiter is in Enemy Sign in the 3rd house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Stuart Grant Law",
+    "Details": "1968-10-18 12:0 Australia, Herston, Queensland  -27.4496625(S) 153.0237294(E) Australia/Brisbane",
+    "MyPoints": "New Points Parameter 1: 68.25  TransitPoint: 64.525 [************** Paramerer 1 Starts ************** , SUN total: 15.0, MOON total: 13.0, MERCURY total: 4.125   Combusted 5 dedcuted: -0.875, VENUS total: 3.875, MARS total: 18.5, JUPITER total: 6.25, SATURN total: 12.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  15.0,  mar  20.0,  mer  1.875,  jup  10.0,  ven  3.15,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "66.39",
+    "planetInfoHouseWise": [
+      "Sun is in Debilitated in the 3rd house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Exalted in the 2nd house.",
+      "Venus is in Neutral Sign in the 4th house.",
+      "Mars is in Friendly Sign in the 1st house.",
+      "Saturn is in Neutral Sign in the 8th house.",
+      "Jupiter is in Enemy Sign in the 2nd house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Sun, lord of the 1st house, is placed in the 3rd house (Debilitated).",
+      "Sun, lord of the 1st house, is placed in the 3rd house (Debilitated).",
+      "Moon, lord of the 12th house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 9th and 4th house, is placed in the 1st house (Friendly).",
+      "Mercury, lord of the 11th and 2nd house, is placed in the 2nd house (Exalted).",
+      "Venus, lord of the 10th and 3rd house, is placed in the 4th house (Neutral).",
+      "Saturn, lord of the 6th and 7th house, is placed in the 8th house (Neutral).",
+      "Jupiter, lord of the 5th and 8th house, is placed in the 2nd house (Enemy)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 6th house.",
+      "Moon is in Neutral Sign in the 3rd house.",
+      "Mercury is in Neutral Sign in the 7th house.",
+      "Venus is in Friendly Sign in the 7th house.",
+      "Mars is in Exalted in the 6th house.",
+      "Saturn is in Neutral Sign in the 8th house.",
+      "Jupiter is in Enemy Sign in the 11th house."
+    ]
+  }
+}
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Harry Cherrington Brook: 68.06%
+Stuart Grant Law: 66.39%
+
+Predicted Winner: Harry Cherrington Brook (68.06% win probability)
+
+
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England Cricket Team",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": "unknown",
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "England"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": "unknown",
+        "birth_place": "Dunedin, Otago",
+        "birth_country": "New Zealand"
+      }
+    },
+    {
+      "team_name": "Nepal Cricket Team",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": "unknown",
+        "birth_place": "Nawalparasi, Nepal",
+        "birth_country": "Nepal"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": "unknown",
+        "birth_place": "Herston, Queensland",
+        "birth_country": "Australia"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "England vs Nepal",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India"
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": false,
+  "risk_level": "None",
+  "edge_cases": [],
+  "market_implication": "The match is expected to proceed as scheduled. No significant disruptions or technicalities identified that would cause an unexpected resolution (e.g., Void, N/A, Push).",
+  "meta": {
+    "checked_sources": [
+      "Google Search (injury reports for England and Nepal cricket teams)",
+      "Google Search (cancellation rumors for T20 World Cup England vs Nepal)",
+      "Google Search (weather forecast for Wankhede Stadium, Mumbai)",
+      "Cricket news outlets (CricTracker, Financial Express, Cricket Addictor, The Island, The Kathmandu Post, Sportskeeda, Durham CCC, Crictoday, Edgbaston Stadium, Hollywoodbets Sports Blog, Yardbarker, Cricket Counsel)"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England Cricket Team",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": null,
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "England",
+        "lat": 53.8684021,
+        "lon": -1.9020456,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "Europe/London"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": null,
+        "birth_place": "Dunedin, Otago",
+        "birth_country": "New Zealand",
+        "lat": -45.8740984,
+        "lon": 170.5035755,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Pacific/Auckland"
+      }
+    },
+    {
+      "team_name": "Nepal Cricket Team",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": null,
+        "birth_place": "Nawalparasi, Nepal",
+        "birth_country": "Nepal"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": null,
+        "birth_place": "Herston, Queensland",
+        "birth_country": "Australia",
+        "lat": -27.4496625,
+        "lon": 153.0237294,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Australia/Brisbane"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "England vs Nepal",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Harry Cherrington Brook",
+      "birth_date": "1999-02-22",
+      "birth_time": null,
+      "birth_place": "Keighley, Yorkshire",
+      "birth_country": "England",
+      "gender": "unknown",
+      "lat": 53.8684021,
+      "lon": -1.9020456,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "Europe/London"
+    },
+    {
+      "name": "Stuart Grant Law",
+      "birth_date": "1968-10-18",
+      "birth_time": null,
+      "birth_place": "Herston, Queensland",
+      "birth_country": "Australia",
+      "gender": "unknown",
+      "lat": -27.4496625,
+      "lon": 153.0237294,
+      "lat_dir": "S",
+      "lon_dir": "E",
+      "birth_timezone": "Australia/Brisbane"
+    }
+  ],
+  "event": {
+    "event_name": "England vs Nepal",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 31,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Harry Cherrington Brook",
+    "Details": "1999-2-22 12:0 England, Keighley, Yorkshire  53.8684021(N) -1.9020456(W) Europe/London",
+    "MyPoints": "New Points Parameter 1: 72.375  TransitPoint: 63.75 [************** Paramerer 1 Starts ************** , SUN total: 15.5, MOON total: 13.0, MERCURY total: 4.625, VENUS total: 4.5, MARS total: 15.5, JUPITER total: 6.25, SATURN total: 13.0, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  15.0,  mar  20.0,  mer  3.75,  jup  6.0,  ven  4.5,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "68.06",
+    "planetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Exalted in the 12th house.",
+      "Mars is in Neutral Sign in the 7th house.",
+      "Saturn is in Debilitated in the 1st house.",
+      "Jupiter is in Own Sign in the 12th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mars, lord of the 1st house, is placed in the 7th house (Neutral).",
+      "Sun, lord of the 5th house, is placed in the 11th house (Enemy).",
+      "Moon, lord of the 4th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 1st and 8th house, is placed in the 7th house (Neutral).",
+      "Mercury, lord of the 3rd and 6th house, is placed in the 11th house (Neutral).",
+      "Venus, lord of the 2nd and 7th house, is placed in the 12th house (Exalted).",
+      "Saturn, lord of the 10th and 11th house, is placed in the 1st house (Debilitated).",
+      "Jupiter, lord of the 9th and 12th house, is placed in the 12th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 10th house.",
+      "Moon is in Neutral Sign in the 7th house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Friendly Sign in the 11th house.",
+      "Mars is in Exalted in the 10th house.",
+      "Saturn is in Neutral Sign in the 12th house.",
+      "Jupiter is in Enemy Sign in the 3rd house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Stuart Grant Law",
+    "Details": "1968-10-18 12:0 Australia, Herston, Queensland  -27.4496625(S) 153.0237294(E) Australia/Brisbane",
+    "MyPoints": "New Points Parameter 1: 68.25  TransitPoint: 64.525 [************** Paramerer 1 Starts ************** , SUN total: 15.0, MOON total: 13.0, MERCURY total: 4.125   Combusted 5 dedcuted: -0.875, VENUS total: 3.875, MARS total: 18.5, JUPITER total: 6.25, SATURN total: 12.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  15.0,  mar  20.0,  mer  1.875,  jup  10.0,  ven  3.15,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "66.39",
+    "planetInfoHouseWise": [
+      "Sun is in Debilitated in the 3rd house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Exalted in the 2nd house.",
+      "Venus is in Neutral Sign in the 4th house.",
+      "Mars is in Friendly Sign in the 1st house.",
+      "Saturn is in Neutral Sign in the 8th house.",
+      "Jupiter is in Enemy Sign in the 2nd house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Sun, lord of the 1st house, is placed in the 3rd house (Debilitated).",
+      "Sun, lord of the 1st house, is placed in the 3rd house (Debilitated).",
+      "Moon, lord of the 12th house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 9th and 4th house, is placed in the 1st house (Friendly).",
+      "Mercury, lord of the 11th and 2nd house, is placed in the 2nd house (Exalted).",
+      "Venus, lord of the 10th and 3rd house, is placed in the 4th house (Neutral).",
+      "Saturn, lord of the 6th and 7th house, is placed in the 8th house (Neutral).",
+      "Jupiter, lord of the 5th and 8th house, is placed in the 2nd house (Enemy)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 6th house.",
+      "Moon is in Neutral Sign in the 3rd house.",
+      "Mercury is in Neutral Sign in the 7th house.",
+      "Venus is in Friendly Sign in the 7th house.",
+      "Mars is in Exalted in the 6th house.",
+      "Saturn is in Neutral Sign in the 8th house.",
+      "Jupiter is in Enemy Sign in the 11th house."
+    ]
+  }
+}
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Harry Cherrington Brook: 68.06%
+Stuart Grant Law: 66.39%
+
+Predicted Winner: Harry Cherrington Brook (68.06% win probability)
+======================================================================
+(.venv)  ~/p/w/d/cli-app  py[.venv]  python teams_directpredictions.py --slug crint-gbr-np
+l-2026-02-08
+=== Sending event to Gemini (Teams client) ===
+Web Search Queries Used
+
+=== Sending event to Gemini (EdgeCase client) ===
+Web Search Queries Used
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": "unknown",
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "United Kingdom"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": "unknown",
+        "birth_place": "Dunedin, Otago Region",
+        "birth_country": "New Zealand"
+      }
+    },
+    {
+      "team_name": "Nepal",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": "unknown",
+        "birth_place": "Nawalparasi",
+        "birth_country": "Nepal"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": "unknown",
+        "birth_place": "Herston, Brisbane, Queensland",
+        "birth_country": "Australia"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: England vs Nepal (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India"
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": false,
+  "risk_level": "None",
+  "edge_cases": [],
+  "market_implication": "The market is highly likely to resolve according to the finalized match result as published by icc-cricket.com. No immediate risks of void, N/A, or push resolution have been identified.",
+  "meta": {
+    "checked_sources": [
+      "Google Search (time in Mumbai)",
+      "The Financial Express (Sports News)",
+      "Outlook India",
+      "DAWN.COM (Newspaper)",
+      "Sky Sports",
+      "The Kathmandu Post",
+      "Al Jazeera",
+      "Cricketnmore",
+      "CricTracker",
+      "Yardbarker",
+      "PredictWind",
+      "www.lokmattimes.com",
+      "CrickOnly",
+      "cricexec",
+      "ABP Live",
+      "Reddit (r/EnglandCricket)"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": null,
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "United Kingdom",
+        "lat": 53.8684021,
+        "lon": -1.9020456,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "Europe/London"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": null,
+        "birth_place": "Dunedin, Otago Region",
+        "birth_country": "New Zealand"
+      }
+    },
+    {
+      "team_name": "Nepal",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": null,
+        "birth_place": "Nawalparasi",
+        "birth_country": "Nepal",
+        "lat": 27.5059879,
+        "lon": 83.7683561,
+        "lat_dir": "N",
+        "lon_dir": "E",
+        "birth_timezone": "Asia/Kathmandu"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": null,
+        "birth_place": "Herston, Brisbane, Queensland",
+        "birth_country": "Australia",
+        "lat": -27.4496625,
+        "lon": 153.0237294,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Australia/Brisbane"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: England vs Nepal (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Harry Cherrington Brook",
+      "birth_date": "1999-02-22",
+      "birth_time": null,
+      "birth_place": "Keighley, Yorkshire",
+      "birth_country": "United Kingdom",
+      "gender": "unknown",
+      "lat": 53.8684021,
+      "lon": -1.9020456,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "Europe/London"
+    },
+    {
+      "name": "Rohit Kumar Paudel",
+      "birth_date": "2002-09-02",
+      "birth_time": null,
+      "birth_place": "Nawalparasi",
+      "birth_country": "Nepal",
+      "gender": "unknown",
+      "lat": 27.5059879,
+      "lon": 83.7683561,
+      "lat_dir": "N",
+      "lon_dir": "E",
+      "birth_timezone": "Asia/Kathmandu"
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: England vs Nepal (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 32,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Harry Cherrington Brook",
+    "Details": "1999-2-22 12:0 United Kingdom, Keighley, Yorkshire  53.8684021(N) -1.9020456(W) Europe/London",
+    "MyPoints": "New Points Parameter 1: 72.375  TransitPoint: 63.75 [************** Paramerer 1 Starts ************** , SUN total: 15.5, MOON total: 13.0, MERCURY total: 4.625, VENUS total: 4.5, MARS total: 15.5, JUPITER total: 6.25, SATURN total: 13.0, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  15.0,  mar  20.0,  mer  3.75,  jup  6.0,  ven  4.5,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "68.06",
+    "planetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Exalted in the 12th house.",
+      "Mars is in Neutral Sign in the 7th house.",
+      "Saturn is in Debilitated in the 1st house.",
+      "Jupiter is in Own Sign in the 12th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mars, lord of the 1st house, is placed in the 7th house (Neutral).",
+      "Sun, lord of the 5th house, is placed in the 11th house (Enemy).",
+      "Moon, lord of the 4th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 1st and 8th house, is placed in the 7th house (Neutral).",
+      "Mercury, lord of the 3rd and 6th house, is placed in the 11th house (Neutral).",
+      "Venus, lord of the 2nd and 7th house, is placed in the 12th house (Exalted).",
+      "Saturn, lord of the 10th and 11th house, is placed in the 1st house (Debilitated).",
+      "Jupiter, lord of the 9th and 12th house, is placed in the 12th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 10th house.",
+      "Moon is in Neutral Sign in the 7th house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Friendly Sign in the 11th house.",
+      "Mars is in Exalted in the 10th house.",
+      "Saturn is in Neutral Sign in the 12th house.",
+      "Jupiter is in Enemy Sign in the 3rd house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Rohit Kumar Paudel",
+    "Details": "2002-9-2 12:0 Nepal, Nawalparasi  27.5059879(N) 83.7683561(E) Asia/Kathmandu",
+    "MyPoints": "New Points Parameter 1: 76.625  TransitPoint: 55.625 [************** Paramerer 1 Starts ************** , SUN total: 18.5, MOON total: 14.0, MERCURY total: 3.875, VENUS total: 4.0, MARS total: 19.0   Combusted 5 dedcuted: 14.0, JUPITER total: 6.75, SATURN total: 15.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  6.5,  moo  13.5,  mar  12.0,  mer  2.625,  jup  9.0,  ven  4.5,  sat  7.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "66.13",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 3rd house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Exalted in the 4th house.",
+      "Venus is in Own Sign in the 5th house.",
+      "Mars is in Friendly Sign in the 3rd house.",
+      "Saturn is in Friendly Sign in the 1st house.",
+      "Jupiter is in Exalted in the 2nd house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mercury, lord of the 1st house, is placed in the 4th house (Exalted).",
+      "Sun, lord of the 3rd house, is placed in the 3rd house (Own Sign).",
+      "Moon, lord of the 2nd house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 11th and 6th house, is placed in the 3rd house (Friendly).",
+      "Mercury, lord of the 1st and 4th house, is placed in the 4th house (Exalted).",
+      "Venus, lord of the 12th and 5th house, is placed in the 5th house (Own Sign).",
+      "Saturn, lord of the 8th and 9th house, is placed in the 1st house (Friendly).",
+      "Jupiter, lord of the 7th and 10th house, is placed in the 2nd house (Exalted)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 8th house.",
+      "Moon is in Neutral Sign in the 5th house.",
+      "Mercury is in Neutral Sign in the 9th house.",
+      "Venus is in Friendly Sign in the 9th house.",
+      "Mars is in Exalted in the 8th house.",
+      "Saturn is in Neutral Sign in the 10th house.",
+      "Jupiter is in Enemy Sign in the 1st house."
+    ]
+  }
+}
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Harry Cherrington Brook: 68.06%
+Rohit Kumar Paudel: 66.13%
+
+Predicted Winner: Harry Cherrington Brook (68.06% win probability)
+======================================================================
+(.venv)  ~/p/w/d/cli-app  py[.venv]  python teams_directpredictions.py --slug crint-gbr-np
+l-2026-02-08
+=== Sending event to Gemini (Teams client) ===
+Web Search Queries Used
+
+=== Sending event to Gemini (EdgeCase client) ===
+Web Search Queries Used
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": "unknown",
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "United Kingdom"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": "unknown",
+        "birth_place": "Dunedin, Otago Region",
+        "birth_country": "New Zealand"
+      }
+    },
+    {
+      "team_name": "Nepal",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": "unknown",
+        "birth_place": "Nawalparasi",
+        "birth_country": "Nepal"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": "unknown",
+        "birth_place": "Herston, Brisbane, Queensland",
+        "birth_country": "Australia"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: England vs Nepal (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India"
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": false,
+  "risk_level": "None",
+  "edge_cases": [],
+  "market_implication": "The market is expected to resolve according to the finalized match result as published by icc-cricket.com, as no black swan events or hidden risks have been identified.",
+  "meta": {
+    "checked_sources": [
+      "Sky Sports",
+      "The Kathmandu Post",
+      "The Financial Express",
+      "Crictoday",
+      "Cricketnmore",
+      "Times of India",
+      "CricTracker",
+      "Flashscore.com",
+      "Cricket Addictor",
+      "Sportskeeda",
+      "Wisden",
+      "ICC",
+      "Wikipedia",
+      "PTV News",
+      "NDTV Sports Desk",
+      "The Tribune"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "England",
+      "captain": {
+        "name": "Harry Cherrington Brook",
+        "birth_date": "1999-02-22",
+        "birth_time": null,
+        "birth_place": "Keighley, Yorkshire",
+        "birth_country": "United Kingdom",
+        "lat": 53.8684021,
+        "lon": -1.9020456,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "Europe/London"
+      },
+      "coach": {
+        "name": "Brendon Barrie McCullum",
+        "birth_date": "1981-09-27",
+        "birth_time": null,
+        "birth_place": "Dunedin, Otago Region",
+        "birth_country": "New Zealand"
+      }
+    },
+    {
+      "team_name": "Nepal",
+      "captain": {
+        "name": "Rohit Kumar Paudel",
+        "birth_date": "2002-09-02",
+        "birth_time": null,
+        "birth_place": "Nawalparasi",
+        "birth_country": "Nepal",
+        "lat": 27.5059879,
+        "lon": 83.7683561,
+        "lat_dir": "N",
+        "lon_dir": "E",
+        "birth_timezone": "Asia/Kathmandu"
+      },
+      "coach": {
+        "name": "Stuart Grant Law",
+        "birth_date": "1968-10-18",
+        "birth_time": null,
+        "birth_place": "Herston, Brisbane, Queensland",
+        "birth_country": "Australia",
+        "lat": -27.4496625,
+        "lon": 153.0237294,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Australia/Brisbane"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: England vs Nepal (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Harry Cherrington Brook",
+      "birth_date": "1999-02-22",
+      "birth_time": null,
+      "birth_place": "Keighley, Yorkshire",
+      "birth_country": "United Kingdom",
+      "gender": "unknown",
+      "lat": 53.8684021,
+      "lon": -1.9020456,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "Europe/London"
+    },
+    {
+      "name": "Rohit Kumar Paudel",
+      "birth_date": "2002-09-02",
+      "birth_time": null,
+      "birth_place": "Nawalparasi",
+      "birth_country": "Nepal",
+      "gender": "unknown",
+      "lat": 27.5059879,
+      "lon": 83.7683561,
+      "lat_dir": "N",
+      "lon_dir": "E",
+      "birth_timezone": "Asia/Kathmandu"
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: England vs Nepal (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "09:30:00",
+    "event_location": "Wankhede Stadium, Mumbai, India",
+    "event_lat": 18.9385497,
+    "event_lon": 72.8257408,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 33,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Harry Cherrington Brook",
+    "Details": "1999-2-22 12:0 United Kingdom, Keighley, Yorkshire  53.8684021(N) -1.9020456(W) Europe/London",
+    "MyPoints": "New Points Parameter 1: 72.375  TransitPoint: 63.75 [************** Paramerer 1 Starts ************** , SUN total: 15.5, MOON total: 13.0, MERCURY total: 4.625, VENUS total: 4.5, MARS total: 15.5, JUPITER total: 6.25, SATURN total: 13.0, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  15.0,  mar  20.0,  mer  3.75,  jup  6.0,  ven  4.5,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "68.06",
+    "planetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Exalted in the 12th house.",
+      "Mars is in Neutral Sign in the 7th house.",
+      "Saturn is in Debilitated in the 1st house.",
+      "Jupiter is in Own Sign in the 12th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mars, lord of the 1st house, is placed in the 7th house (Neutral).",
+      "Sun, lord of the 5th house, is placed in the 11th house (Enemy).",
+      "Moon, lord of the 4th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 1st and 8th house, is placed in the 7th house (Neutral).",
+      "Mercury, lord of the 3rd and 6th house, is placed in the 11th house (Neutral).",
+      "Venus, lord of the 2nd and 7th house, is placed in the 12th house (Exalted).",
+      "Saturn, lord of the 10th and 11th house, is placed in the 1st house (Debilitated).",
+      "Jupiter, lord of the 9th and 12th house, is placed in the 12th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 10th house.",
+      "Moon is in Neutral Sign in the 7th house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Friendly Sign in the 11th house.",
+      "Mars is in Exalted in the 10th house.",
+      "Saturn is in Neutral Sign in the 12th house.",
+      "Jupiter is in Enemy Sign in the 3rd house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Rohit Kumar Paudel",
+    "Details": "2002-9-2 12:0 Nepal, Nawalparasi  27.5059879(N) 83.7683561(E) Asia/Kathmandu",
+    "MyPoints": "New Points Parameter 1: 76.625  TransitPoint: 55.625 [************** Paramerer 1 Starts ************** , SUN total: 18.5, MOON total: 14.0, MERCURY total: 3.875, VENUS total: 4.0, MARS total: 19.0   Combusted 5 dedcuted: 14.0, JUPITER total: 6.75, SATURN total: 15.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  6.5,  moo  13.5,  mar  12.0,  mer  2.625,  jup  9.0,  ven  4.5,  sat  7.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "66.13",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 3rd house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Exalted in the 4th house.",
+      "Venus is in Own Sign in the 5th house.",
+      "Mars is in Friendly Sign in the 3rd house.",
+      "Saturn is in Friendly Sign in the 1st house.",
+      "Jupiter is in Exalted in the 2nd house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mercury, lord of the 1st house, is placed in the 4th house (Exalted).",
+      "Sun, lord of the 3rd house, is placed in the 3rd house (Own Sign).",
+      "Moon, lord of the 2nd house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 11th and 6th house, is placed in the 3rd house (Friendly).",
+      "Mercury, lord of the 1st and 4th house, is placed in the 4th house (Exalted).",
+      "Venus, lord of the 12th and 5th house, is placed in the 5th house (Own Sign).",
+      "Saturn, lord of the 8th and 9th house, is placed in the 1st house (Friendly).",
+      "Jupiter, lord of the 7th and 10th house, is placed in the 2nd house (Exalted)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 8th house.",
+      "Moon is in Neutral Sign in the 5th house.",
+      "Mercury is in Neutral Sign in the 9th house.",
+      "Venus is in Friendly Sign in the 9th house.",
+      "Mars is in Exalted in the 8th house.",
+      "Saturn is in Neutral Sign in the 10th house.",
+      "Jupiter is in Enemy Sign in the 1st house."
+    ]
+  }
+}
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Harry Cherrington Brook: 68.06%
+Rohit Kumar Paudel: 66.13%
+
+Predicted Winner: Harry Cherrington Brook (68.06% win probability)
+========================
+
+
+
+
+
+
+
+
+== Sending event to Gemini (Teams client) ===
+Web Search Queries Used
+
+=== Sending event to Gemini (EdgeCase client) ===
+Web Search Queries Used
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "Afghanistan",
+      "captain": {
+        "name": "Rashid Khan Arman",
+        "birth_date": "1998-09-20",
+        "birth_time": "unknown",
+        "birth_place": "Nangarhar",
+        "birth_country": "Afghanistan",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Ian Jonathan Leonard Trott",
+        "birth_date": "1981-04-22",
+        "birth_time": "unknown",
+        "birth_place": "Cape Town, Cape Province",
+        "birth_country": "South Africa",
+        "gender": "Male"
+      }
+    },
+    {
+      "team_name": "New Zealand",
+      "captain": {
+        "name": "Mitchell Josef Santner",
+        "birth_date": "1992-02-05",
+        "birth_time": "unknown",
+        "birth_place": "Hamilton, Waikato",
+        "birth_country": "New Zealand",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Rob Alun Walter",
+        "birth_date": "1975-09-16",
+        "birth_time": "unknown",
+        "birth_place": "Johannesburg",
+        "birth_country": "South Africa",
+        "gender": "Male"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Afghanistan vs New Zealand",
+    "event_date": "2026-02-08",
+    "event_time": "05:30:00",
+    "event_location": "MA Chidambaram Stadium, Chennai, India"
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": false,
+  "risk_level": "None",
+  "edge_cases": [],
+  "market_implication": "The match between Afghanistan and New Zealand is proceeding as scheduled at the MA Chidambaram Stadium in Chennai, India, on February 8, 2026. The toss has occurred, and Afghanistan has elected to bat first. Current weather forecasts for Chennai indicate no probability of rain, with hot and humid conditions, minimizing the risk of weather-related delays or abandonment. While New Zealand has faced reports of a depleted squad due to player illness and injuries to key players like Rachin Ravindra, Devon Conway, Finn Allen, Michael Bracewell, and Lockie Ferguson in the lead-up to the tournament, the published playing XI for today's match includes several of these players, indicating their participation. Therefore, there are no immediate indicators suggesting the market will resolve unexpectedly (e.g., Void, N/A, Push). The market is expected to resolve based on the finalized match result, as per the rules which account for ordinary wins, including those determined by DLS/DRS or forfeits.",
+  "meta": {
+    "checked_sources": [
+      "ESPN Injury Report",
+      "Weather.com",
+      "Twitter/X Beats",
+      "ICC-Cricket.com",
+      "The Economic Times",
+      "NDTV Sports",
+      "CREX",
+      "BookMyShow",
+      "The Indian Express",
+      "Cricket Addictor",
+      "CricTracker",
+      "Wikipedia",
+      "The Island",
+      "Reddit Cricket",
+      "Pakistan Connect",
+      "Sky Sports",
+      "DAWN.COM",
+      "Possible11",
+      "Hindustan Times"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "Afghanistan",
+      "captain": {
+        "name": "Rashid Khan Arman",
+        "birth_date": "1998-09-20",
+        "birth_time": null,
+        "birth_place": "Nangarhar",
+        "birth_country": "Afghanistan",
+        "gender": "Male",
+        "lat": 34.220389,
+        "lon": 70.3800314,
+        "lat_dir": "N",
+        "lon_dir": "E",
+        "birth_timezone": "Asia/Kabul"
+      },
+      "coach": {
+        "name": "Ian Jonathan Leonard Trott",
+        "birth_date": "1981-04-22",
+        "birth_time": null,
+        "birth_place": "Cape Town, Cape Province",
+        "birth_country": "South Africa",
+        "gender": "Male",
+        "lat": -33.9288301,
+        "lon": 18.4172197,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Africa/Johannesburg"
+      }
+    },
+    {
+      "team_name": "New Zealand",
+      "captain": {
+        "name": "Mitchell Josef Santner",
+        "birth_date": "1992-02-05",
+        "birth_time": null,
+        "birth_place": "Hamilton, Waikato",
+        "birth_country": "New Zealand",
+        "gender": "Male",
+        "lat": -37.7878809,
+        "lon": 175.281788,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Pacific/Auckland"
+      },
+      "coach": {
+        "name": "Rob Alun Walter",
+        "birth_date": "1975-09-16",
+        "birth_time": null,
+        "birth_place": "Johannesburg",
+        "birth_country": "South Africa",
+        "gender": "Male",
+        "lat": -26.205,
+        "lon": 28.049722,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Africa/Johannesburg"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Afghanistan vs New Zealand",
+    "event_date": "2026-02-08",
+    "event_time": "05:30:00",
+    "event_location": "MA Chidambaram Stadium, Chennai, India",
+    "event_lat": 13.0627521,
+    "event_lon": 80.2784304,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Rashid Khan Arman",
+      "birth_date": "1998-09-20",
+      "birth_time": null,
+      "birth_place": "Nangarhar",
+      "birth_country": "Afghanistan",
+      "gender": "Male",
+      "lat": 34.220389,
+      "lon": 70.3800314,
+      "lat_dir": "N",
+      "lon_dir": "E",
+      "birth_timezone": "Asia/Kabul"
+    },
+    {
+      "name": "Mitchell Josef Santner",
+      "birth_date": "1992-02-05",
+      "birth_time": null,
+      "birth_place": "Hamilton, Waikato",
+      "birth_country": "New Zealand",
+      "gender": "Male",
+      "lat": -37.7878809,
+      "lon": 175.281788,
+      "lat_dir": "S",
+      "lon_dir": "E",
+      "birth_timezone": "Pacific/Auckland"
+    }
+  ],
+  "event": {
+    "event_name": "Afghanistan vs New Zealand",
+    "event_date": "2026-02-08",
+    "event_time": "05:30:00",
+    "event_location": "MA Chidambaram Stadium, Chennai, India",
+    "event_lat": 13.0627521,
+    "event_lon": 80.2784304,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Kolkata"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 34,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Rashid Khan Arman",
+    "Details": "1998-9-20 12:0 Afghanistan, Nangarhar  34.220389(N) 70.3800314(E) Asia/Kabul",
+    "MyPoints": "New Points Parameter 1: 57.75  TransitPoint: 52.05 [************** Paramerer 1 Starts ************** , SUN total: 13.0, MOON total: 16.5   Combusted 5 dedcuted: 11.5, MERCURY total: 3.75   Combusted 5 dedcuted: -1.25, VENUS total: 2.75, MARS total: 11.5, JUPITER total: 8.25, SATURN total: 12.0, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  7.5,  moo  10.5,  mar  15.0,  mer  3.75,  jup  7.5,  ven  1.8,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "54.9",
+    "planetInfoHouseWise": [
+      "Sun is in Neutral Sign in the 1st house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Friendly Sign in the 12th house.",
+      "Venus is in Enemy Sign in the 12th house.",
+      "Mars is in Debilitated in the 11th house.",
+      "Saturn is in Debilitated in the 8th house.",
+      "Jupiter is in Neutral Sign in the 6th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mercury, lord of the 1st house, is placed in the 12th house (Friendly).",
+      "Sun, lord of the 12th house, is placed in the 1st house (Neutral).",
+      "Moon, lord of the 11th house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 8th and 3rd house, is placed in the 11th house (Debilitated).",
+      "Mercury, lord of the 10th and 1st house, is placed in the 12th house (Friendly).",
+      "Venus, lord of the 9th and 2nd house, is placed in the 12th house (Enemy).",
+      "Saturn, lord of the 5th and 6th house, is placed in the 8th house (Debilitated).",
+      "Jupiter, lord of the 4th and 7th house, is placed in the 6th house (Neutral)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 5th house.",
+      "Moon is in Neutral Sign in the 2nd house.",
+      "Mercury is in Neutral Sign in the 6th house.",
+      "Venus is in Friendly Sign in the 6th house.",
+      "Mars is in Exalted in the 5th house.",
+      "Saturn is in Neutral Sign in the 7th house.",
+      "Jupiter is in Enemy Sign in the 10th house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Mitchell Josef Santner",
+    "Details": "1992-2-5 12:0 New Zealand, Hamilton, Waikato  -37.7878809(S) 175.281788(E) Pacific/Auckland",
+    "MyPoints": "New Points Parameter 1: 63.125  TransitPoint: 51.375 [************** Paramerer 1 Starts ************** , SUN total: 11.5, MOON total: 13.5, MERCURY total: 3.25   Combusted 5 dedcuted: -1.75, VENUS total: 3.125, MARS total: 18.0, JUPITER total: 8.25, SATURN total: 15.5   Combusted 5 dedcuted: 10.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  6.5,  moo  11.25,  mar  12.0,  mer  2.625,  jup  10.0,  ven  4.5,  sat  4.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "57.25",
+    "planetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 12th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 12th house.",
+      "Venus is in Neutral Sign in the 11th house.",
+      "Mars is in Friendly Sign in the 11th house.",
+      "Saturn is in Own Sign in the 12th house.",
+      "Jupiter is in Friendly Sign in the 7th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Saturn, lord of the 1st house, is placed in the 12th house (Own Sign).",
+      "Sun, lord of the 7th house, is placed in the 12th house (Enemy).",
+      "Moon, lord of the 6th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 3rd and 10th house, is placed in the 11th house (Friendly).",
+      "Mercury, lord of the 5th and 8th house, is placed in the 12th house (Neutral).",
+      "Venus, lord of the 4th and 9th house, is placed in the 11th house (Neutral).",
+      "Saturn, lord of the 12th and 1st house, is placed in the 12th house (Own Sign).",
+      "Jupiter, lord of the 11th and 2nd house, is placed in the 7th house (Friendly)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 12th house.",
+      "Moon is in Neutral Sign in the 9th house.",
+      "Mercury is in Neutral Sign in the 1st house.",
+      "Venus is in Friendly Sign in the 1st house.",
+      "Mars is in Exalted in the 12th house.",
+      "Saturn is in Neutral Sign in the 2nd house.",
+      "Jupiter is in Enemy Sign in the 5th house."
+    ]
+  }
+}
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Rashid Khan Arman: 54.9%
+Mitchell Josef Santner: 57.25%
+
+Predicted Winner: Mitchell Josef Santner (57.25% win probability)
+===============================
+
+
+
+
+=== Sending event to Gemini (Teams client) ===
+Web Search Queries Used
+
+=== Sending event to Gemini (EdgeCase client) ===
+Web Search Queries Used
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "Sri Lanka",
+      "captain": {
+        "name": "Madagamagamage Dasun Shanaka",
+        "birth_date": "1991-09-09",
+        "birth_time": "unknown",
+        "birth_place": "Negombo, Western Province",
+        "birth_country": "Sri Lanka",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Sanath Teran Jayasuriya",
+        "birth_date": "1969-06-30",
+        "birth_time": "09:40",
+        "birth_place": "Matara",
+        "birth_country": "Sri Lanka",
+        "gender": "Male"
+      }
+    },
+    {
+      "team_name": "Ireland",
+      "captain": {
+        "name": "Paul Robert Stirling",
+        "birth_date": "1990-09-03",
+        "birth_time": "unknown",
+        "birth_place": "Belfast, Northern Ireland",
+        "birth_country": "United Kingdom",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Heinrich Malan",
+        "birth_date": "1981-04-06",
+        "birth_time": "unknown",
+        "birth_place": "Pretoria",
+        "birth_country": "South Africa",
+        "gender": "Male"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: Sri Lanka vs Ireland (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "13:30:00",
+    "event_location": "R. Premadasa International Cricket Stadium, Colombo, Sri Lanka"
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": true,
+  "risk_level": "Low",
+  "edge_cases": [
+    {
+      "category": "Injury",
+      "entity": "Eshan Malinga (Sri Lanka)",
+      "description": "Sri Lanka's fast bowler Eshan Malinga has been ruled out of the ICC Men's T20 World Cup 2026 due to a shoulder injury. He has been replaced by Pramod Madushan in the squad after ICC approval.",
+      "impact_probability": "Low",
+      "evidence": "Sri Lanka quick Eshan Malinga has been ruled out of the ICC Men's T20 World Cup 2026 owing to a shoulder injury. The 25-year-old had sustained a blow during the recently concluded T20I series against England. In his stead, Sri Lanka have added Pramod Madushan to their squad for the tournament.",
+      "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGOkceFql55TY0ijKy626rqpBEfOS67MaulPC0mhu4EoIbgUfha2QZx4NjKwoQR0Z7u3ljYE168KkFxKJY4JiM7bi9hN0CFUxxthtSWXiJ7Iky-cFIyfQVmE_nxgUwXAVNZ0PU8Yt7_LmmS2dkLVYh0Mh1BlO7sAVACzQixlbnao0rLaMDGAO13H7XB5a7Btc3PjHtNuKfrSCvHrydypxHAcpfahjn2r6-nZvzFAFDYHw=="
+    }
+  ],
+  "market_implication": "The market is unlikely to be voided or result in N/A. While a player injury has occurred for Sri Lanka, a replacement has been approved and confirmed, meaning the match will proceed as scheduled with the updated squad. The low chance of rain also indicates a completed match. The market should resolve based on the finalized match result.",
+  "meta": {
+    "checked_sources": [
+      "Google Search for T20 World Cup Sri Lanka vs Ireland February 8 2026 venue",
+      "Google Search for T20 World Cup 2026 schedule",
+      "Google Search for Sri Lanka cricket team injury update",
+      "Google Search for Ireland cricket team injury update",
+      "Google Search for T20 World Cup Sri Lanka vs Ireland February 8 2026 cancellation rumors",
+      "Google Search for Colombo weather forecast February 8 2026"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "Sri Lanka",
+      "captain": {
+        "name": "Madagamagamage Dasun Shanaka",
+        "birth_date": "1991-09-09",
+        "birth_time": null,
+        "birth_place": "Negombo, Western Province",
+        "birth_country": "Sri Lanka",
+        "gender": "Male",
+        "lat": 7.2094282,
+        "lon": 79.833117,
+        "lat_dir": "N",
+        "lon_dir": "E",
+        "birth_timezone": "Asia/Colombo"
+      },
+      "coach": {
+        "name": "Sanath Teran Jayasuriya",
+        "birth_date": "1969-06-30",
+        "birth_time": "09:40",
+        "birth_place": "Matara",
+        "birth_country": "Sri Lanka",
+        "gender": "Male",
+        "lat": 5.9478515,
+        "lon": 80.5463359,
+        "lat_dir": "N",
+        "lon_dir": "E",
+        "birth_timezone": "Asia/Colombo"
+      }
+    },
+    {
+      "team_name": "Ireland",
+      "captain": {
+        "name": "Paul Robert Stirling",
+        "birth_date": "1990-09-03",
+        "birth_time": null,
+        "birth_place": "Belfast, Northern Ireland",
+        "birth_country": "United Kingdom",
+        "gender": "Male",
+        "lat": 54.5975805,
+        "lon": -5.9277097,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "Europe/London"
+      },
+      "coach": {
+        "name": "Heinrich Malan",
+        "birth_date": "1981-04-06",
+        "birth_time": null,
+        "birth_place": "Pretoria",
+        "birth_country": "South Africa",
+        "gender": "Male",
+        "lat": -25.7459277,
+        "lon": 28.1879101,
+        "lat_dir": "S",
+        "lon_dir": "E",
+        "birth_timezone": "Africa/Johannesburg"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: Sri Lanka vs Ireland (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "13:30:00",
+    "event_location": "R. Premadasa International Cricket Stadium, Colombo, Sri Lanka",
+    "event_lat": 6.9399983,
+    "event_lon": 79.8722901,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Colombo"
+  }
+}
+
+[Warning] has_edge_case = True, risk_level = Low
+Edge case detected. Still send to prediction API? [y/N]: y
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Madagamagamage Dasun Shanaka",
+      "birth_date": "1991-09-09",
+      "birth_time": null,
+      "birth_place": "Negombo, Western Province",
+      "birth_country": "Sri Lanka",
+      "gender": "Male",
+      "lat": 7.2094282,
+      "lon": 79.833117,
+      "lat_dir": "N",
+      "lon_dir": "E",
+      "birth_timezone": "Asia/Colombo"
+    },
+    {
+      "name": "Paul Robert Stirling",
+      "birth_date": "1990-09-03",
+      "birth_time": null,
+      "birth_place": "Belfast, Northern Ireland",
+      "birth_country": "United Kingdom",
+      "gender": "Male",
+      "lat": 54.5975805,
+      "lon": -5.9277097,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "Europe/London"
+    }
+  ],
+  "event": {
+    "event_name": "T20 World Cup: Sri Lanka vs Ireland (Game 1)",
+    "event_date": "2026-02-08",
+    "event_time": "13:30:00",
+    "event_location": "R. Premadasa International Cricket Stadium, Colombo, Sri Lanka",
+    "event_lat": 6.9399983,
+    "event_lon": 79.8722901,
+    "event_lat_dir": "N",
+    "event_lon_dir": "E",
+    "event_timezone": "Asia/Colombo"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 35,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Madagamagamage Dasun Shanaka",
+    "Details": "1991-9-9 12:0 Sri Lanka, Negombo, Western Province  7.2094282(N) 79.833117(E) Asia/Colombo",
+    "MyPoints": "New Points Parameter 1: 74.875  TransitPoint: 52.05 [************** Paramerer 1 Starts ************** , SUN total: 17.5, MOON total: 16.5   Combusted 5 dedcuted: 11.5, MERCURY total: 3.75, VENUS total: 4.625, MARS total: 13.0, JUPITER total: 8.0, SATURN total: 16.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  7.5,  moo  10.5,  mar  15.0,  mer  3.75,  jup  7.5,  ven  1.8,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "63.46",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 12th house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Friendly Sign in the 12th house.",
+      "Venus is in Enemy Sign in the 11th house.",
+      "Mars is in Enemy Sign in the 1st house.",
+      "Saturn is in Own Sign in the 5th house.",
+      "Jupiter is in Friendly Sign in the 12th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Mercury, lord of the 1st house, is placed in the 12th house (Friendly).",
+      "Sun, lord of the 12th house, is placed in the 12th house (Own Sign).",
+      "Moon, lord of the 11th house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 8th and 3rd house, is placed in the 1st house (Enemy).",
+      "Mercury, lord of the 10th and 1st house, is placed in the 12th house (Friendly).",
+      "Venus, lord of the 9th and 2nd house, is placed in the 11th house (Enemy).",
+      "Saturn, lord of the 5th and 6th house, is placed in the 5th house (Own Sign).",
+      "Jupiter, lord of the 4th and 7th house, is placed in the 12th house (Friendly)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 5th house.",
+      "Moon is in Neutral Sign in the 2nd house.",
+      "Mercury is in Neutral Sign in the 6th house.",
+      "Venus is in Friendly Sign in the 6th house.",
+      "Mars is in Exalted in the 5th house.",
+      "Saturn is in Neutral Sign in the 7th house.",
+      "Jupiter is in Enemy Sign in the 10th house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Paul Robert Stirling",
+    "Details": "1990-9-3 12:0 United Kingdom, Belfast, Northern Ireland  54.5975805(N) -5.9277097(W) Europe/London",
+    "MyPoints": "New Points Parameter 1: 66.75  TransitPoint: 63.75 [************** Paramerer 1 Starts ************** , SUN total: 17.5, MOON total: 16.0, MERCURY total: 3.75   Combusted 5 dedcuted: -1.25, VENUS total: 2.75, MARS total: 12.5, JUPITER total: 6.75, SATURN total: 12.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  9.0,  moo  15.0,  mar  18.0,  mer  3.75,  jup  6.0,  ven  4.5,  sat  7.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "65.25",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 8th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Friendly Sign in the 8th house.",
+      "Venus is in Enemy Sign in the 8th house.",
+      "Mars is in Neutral Sign in the 5th house.",
+      "Saturn is in Neutral Sign in the 12th house.",
+      "Jupiter is in Exalted in the 7th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Saturn, lord of the 1st house, is placed in the 12th house (Neutral).",
+      "Sun, lord of the 8th house, is placed in the 8th house (Own Sign).",
+      "Moon, lord of the 7th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 4th and 11th house, is placed in the 5th house (Neutral).",
+      "Mercury, lord of the 6th and 9th house, is placed in the 8th house (Friendly).",
+      "Venus, lord of the 5th and 10th house, is placed in the 8th house (Enemy).",
+      "Saturn, lord of the 1st and 2nd house, is placed in the 12th house (Neutral).",
+      "Jupiter, lord of the 12th and 3rd house, is placed in the 7th house (Exalted)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 1st house.",
+      "Moon is in Neutral Sign in the 10th house.",
+      "Mercury is in Neutral Sign in the 2nd house.",
+      "Venus is in Friendly Sign in the 2nd house.",
+      "Mars is in Exalted in the 1st house.",
+      "Saturn is in Neutral Sign in the 3rd house.",
+      "Jupiter is in Enemy Sign in the 6th house."
+    ]
+  }
+}
+
+[Info] Prediction saved to predictedmarket/predictions.csv
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Madagamagamage Dasun Shanaka: 63.46%
+Paul Robert Stirling: 65.25%
+
+Predicted Winner: Paul Robert Stirling (65.25% win probability)
+======================================================================
+
+
+
+
+=== Sending event to Gemini (Teams client) ===
+Web Search Queries Used
+
+=== Sending event to Gemini (EdgeCase client) ===
+Web Search Queries Used
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "New York Knicks",
+      "captain": {
+        "name": "Jalen Marquis Brunson",
+        "birth_date": "1996-08-31",
+        "birth_time": "unknown",
+        "birth_place": "New Brunswick, New Jersey",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Michael Burton Brown",
+        "birth_date": "1970-03-05",
+        "birth_time": "unknown",
+        "birth_place": "Columbus, Ohio",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      }
+    },
+    {
+      "team_name": "Boston Celtics",
+      "captain": {
+        "name": "Jaylen Marselles Brown",
+        "birth_date": "1996-10-24",
+        "birth_time": "unknown",
+        "birth_place": "Marietta, Georgia",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Joseph Mazzulla",
+        "birth_date": "1988-06-30",
+        "birth_time": "unknown",
+        "birth_place": "Johnston, Rhode Island",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Knicks vs. Celtics",
+    "event_date": "2026-02-08",
+    "event_time": "17:30:00",
+    "event_location": "TD Garden, Boston, MA, U.S."
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": true,
+  "risk_level": "Low",
+  "edge_cases": [
+    {
+      "category": "Injury",
+      "entity": "New York Knicks",
+      "description": "Miles McBride is out due to pelvic core muscle surgery. Dillon Jones is out on a G League two-way contract. OG Anunoby (Right Toe Soreness), Karl-Anthony Towns (Right Eye Laceration), and Josh Hart (Right Ankle Soreness) are all listed as questionable for the game.",
+      "impact_probability": "High",
+      "evidence": "Sports Illustrated (Feb 8, 2026) states Anunoby, Towns, and Hart are listed as questionable, while McBride and Jones are out. NBA CMS Injury Report (Feb 8, 2026) confirms McBride and Jones are out, and Anunoby, Hart, and Towns are questionable. The Action Network (Feb 8, 2026) also lists Towns as doubtful (laceration), Anunoby questionable (toe), and McBride out (ankle). iHeart Sports (Feb 7, 2026) indicates four Knicks players are on the injury report, including Karl-Anthony Towns.",
+      "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGx8zLJ-1VHNTGRiz7nRqEYyIjKlHUSuKZFcpnEmQUfwCZUnefpXkc1DuzuwV-u3agagv7g_euPH6Mp9UFa5UQSRVuu8UE5cxw9RCjlP_FhiG40dKsAHa2LcwoamPRiHSLrhFV6G1BUMIeGjiqp0wqTVJX4qiLoJuXmil-csEIa_0Uhzj52phu3NKHZQmXbLTUTXEQLkh_-PS4Z1nZP9PvZcW4"
+    },
+    {
+      "category": "Injury",
+      "entity": "Boston Celtics",
+      "description": "Jayson Tatum is out due to a right Achilles repair. Max Shulga is out on a G League two-way contract. Sam Hauser is listed as questionable due to low back spasms.",
+      "impact_probability": "High",
+      "evidence": "NBA CMS Injury Report (Feb 8, 2026) states Tatum is out and Hauser is questionable. FOX Sports 1430 (Feb 8, 2026) lists Jayson Tatum as out (Achilles) and Sam Hauser as questionable (Back). iHeart Sports (Feb 7, 2026) confirms Tatum is out and Hauser is questionable. The Times of India (Feb 7, 2026) details Tatum's injury as a Right Achilles and Hauser's as a Right thumb strain, with Tatum out indefinitely.",
+      "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH4vPjhIlac2JjuthjR3O44-9zL_UOBTrUH5q8_zx3WQvOxdqPwr7gzI_Rb7LXkm79nGIrodkqfa9C0jriAGBFcxEmvmldsFaVfiHEPlm5rqDuLeE4U5M3aQqHYE9vMT6GOqS4oqGLlXIMZ1NTeVkB5q1fEAn_DEycXWc2PsEIVw2vpx069Bu_XeTNk4Y0GK0VvmZKfUFA"
+    }
+  ],
+  "market_implication": "While both teams have key players injured or questionable, these are typical occurrences in NBA regular season games and are unlikely to lead to a market void or N/A resolution. The game is still expected to proceed as scheduled. The injuries primarily impact the competitive balance of the game rather than its official resolution as per the market rules.",
+  "meta": {
+    "checked_sources": [
+      "Sports Illustrated",
+      "The Action Network",
+      "The Times of India",
+      "FOX Sports 1430",
+      "iHeart Sports",
+      "NBA CMS Injury Report",
+      "Google Weather",
+      "Weather25.com",
+      "WeatherShogun"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "New York Knicks",
+      "captain": {
+        "name": "Jalen Marquis Brunson",
+        "birth_date": "1996-08-31",
+        "birth_time": null,
+        "birth_place": "New Brunswick, New Jersey",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 40.4951365,
+        "lon": -74.4439254,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      },
+      "coach": {
+        "name": "Michael Burton Brown",
+        "birth_date": "1970-03-05",
+        "birth_time": null,
+        "birth_place": "Columbus, Ohio",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 39.9622601,
+        "lon": -83.0007065,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      }
+    },
+    {
+      "team_name": "Boston Celtics",
+      "captain": {
+        "name": "Jaylen Marselles Brown",
+        "birth_date": "1996-10-24",
+        "birth_time": null,
+        "birth_place": "Marietta, Georgia",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 33.9528472,
+        "lon": -84.5496148,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      },
+      "coach": {
+        "name": "Joseph Mazzulla",
+        "birth_date": "1988-06-30",
+        "birth_time": null,
+        "birth_place": "Johnston, Rhode Island",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 41.8310404,
+        "lon": -71.5412101,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Knicks vs. Celtics",
+    "event_date": "2026-02-08",
+    "event_time": "17:30:00",
+    "event_location": "TD Garden, Boston, MA, U.S.",
+    "event_lat": 42.3662986,
+    "event_lon": -71.0621622,
+    "event_lat_dir": "N",
+    "event_lon_dir": "W",
+    "event_timezone": "America/New_York"
+  }
+}
+
+[Warning] has_edge_case = True, risk_level = Low
+Edge case detected. Still send to prediction API? [y/N]: y
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Jalen Marquis Brunson",
+      "birth_date": "1996-08-31",
+      "birth_time": null,
+      "birth_place": "New Brunswick, New Jersey",
+      "birth_country": "U.S.",
+      "gender": "Male",
+      "lat": 40.4951365,
+      "lon": -74.4439254,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "America/New_York"
+    },
+    {
+      "name": "Jaylen Marselles Brown",
+      "birth_date": "1996-10-24",
+      "birth_time": null,
+      "birth_place": "Marietta, Georgia",
+      "birth_country": "U.S.",
+      "gender": "Male",
+      "lat": 33.9528472,
+      "lon": -84.5496148,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "America/New_York"
+    }
+  ],
+  "event": {
+    "event_name": "Knicks vs. Celtics",
+    "event_date": "2026-02-08",
+    "event_time": "17:30:00",
+    "event_location": "TD Garden, Boston, MA, U.S.",
+    "event_lat": 42.3662986,
+    "event_lon": -71.0621622,
+    "event_lat_dir": "N",
+    "event_lon_dir": "W",
+    "event_timezone": "America/New_York"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 37,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Jalen Marquis Brunson",
+    "Details": "1996-8-31 12:0 U.S., New Brunswick, New Jersey  40.4951365(N) -74.4439254(W) America/New_York",
+    "MyPoints": "New Points Parameter 1: 78.875  TransitPoint: 60.0 [************** Paramerer 1 Starts ************** , SUN total: 19.5, MOON total: 18.0, MERCURY total: 4.25, VENUS total: 3.625, MARS total: 11.0, JUPITER total: 9.0, SATURN total: 13.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  9.0,  mar  20.0,  mer  1.5,  jup  9.0,  ven  4.5,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "69.44",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 6th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Exalted in the 7th house.",
+      "Venus is in Friendly Sign in the 4th house.",
+      "Mars is in Debilitated in the 5th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Own Sign in the 10th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Jupiter, lord of the 1st house, is placed in the 10th house (Own Sign).",
+      "Sun, lord of the 6th house, is placed in the 6th house (Own Sign).",
+      "Moon, lord of the 5th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 2nd and 9th house, is placed in the 5th house (Debilitated).",
+      "Mercury, lord of the 4th and 7th house, is placed in the 7th house (Exalted).",
+      "Venus, lord of the 3rd and 8th house, is placed in the 4th house (Friendly).",
+      "Saturn, lord of the 11th and 12th house, is placed in the 1st house (Neutral).",
+      "Jupiter, lord of the 10th and 1st house, is placed in the 10th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 8th house.",
+      "Mercury is in Neutral Sign in the 12th house.",
+      "Venus is in Friendly Sign in the 12th house.",
+      "Mars is in Exalted in the 11th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Enemy Sign in the 4th house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Jaylen Marselles Brown",
+    "Details": "1996-10-24 12:0 U.S., Marietta, Georgia  33.9528472(N) -84.5496148(W) America/New_York",
+    "MyPoints": "New Points Parameter 1: 77.125  TransitPoint: 60.0 [************** Paramerer 1 Starts ************** , SUN total: 14.0, MOON total: 18.0, MERCURY total: 4.25   Combusted 5 dedcuted: -0.75, VENUS total: 3.875, MARS total: 19.5, JUPITER total: 9.0, SATURN total: 13.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  9.0,  mar  20.0,  mer  1.5,  jup  9.0,  ven  4.5,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "68.56",
+    "planetInfoHouseWise": [
+      "Sun is in Debilitated in the 8th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Friendly Sign in the 8th house.",
+      "Venus is in Debilitated in the 7th house.",
+      "Mars is in Friendly Sign in the 6th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Own Sign in the 10th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Jupiter, lord of the 1st house, is placed in the 10th house (Own Sign).",
+      "Sun, lord of the 6th house, is placed in the 8th house (Debilitated).",
+      "Moon, lord of the 5th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 2nd and 9th house, is placed in the 6th house (Friendly).",
+      "Mercury, lord of the 4th and 7th house, is placed in the 8th house (Friendly).",
+      "Venus, lord of the 3rd and 8th house, is placed in the 7th house (Debilitated).",
+      "Saturn, lord of the 11th and 12th house, is placed in the 1st house (Neutral).",
+      "Jupiter, lord of the 10th and 1st house, is placed in the 10th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 8th house.",
+      "Mercury is in Neutral Sign in the 12th house.",
+      "Venus is in Friendly Sign in the 12th house.",
+      "Mars is in Exalted in the 11th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Enemy Sign in the 4th house."
+    ]
+  }
+}
+
+[Info] Prediction saved to predictedmarket/predictions.csv
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Jalen Marquis Brunson: 69.44%
+Jaylen Marselles Brown: 68.56%
+
+Predicted Winner: Jalen Marquis Brunson (69.44% win probability)
+============================================================== Sending event to Gemini (Teams client) ===
+Web Search Queries Used
+
+=== Sending event to Gemini (EdgeCase client) ===
+Web Search Queries Used
+
+=== Structured Event (raw from Gemini) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "New York Knicks",
+      "captain": {
+        "name": "Jalen Marquis Brunson",
+        "birth_date": "1996-08-31",
+        "birth_time": "unknown",
+        "birth_place": "New Brunswick, New Jersey",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Michael Burton Brown",
+        "birth_date": "1970-03-05",
+        "birth_time": "unknown",
+        "birth_place": "Columbus, Ohio",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      }
+    },
+    {
+      "team_name": "Boston Celtics",
+      "captain": {
+        "name": "Jaylen Marselles Brown",
+        "birth_date": "1996-10-24",
+        "birth_time": "unknown",
+        "birth_place": "Marietta, Georgia",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      },
+      "coach": {
+        "name": "Joseph Mazzulla",
+        "birth_date": "1988-06-30",
+        "birth_time": "unknown",
+        "birth_place": "Johnston, Rhode Island",
+        "birth_country": "U.S.",
+        "gender": "Male"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Knicks vs. Celtics",
+    "event_date": "2026-02-08",
+    "event_time": "17:30:00",
+    "event_location": "TD Garden, Boston, MA, U.S."
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": true,
+  "risk_level": "Low",
+  "edge_cases": [
+    {
+      "category": "Injury",
+      "entity": "New York Knicks",
+      "description": "Miles McBride is out due to pelvic core muscle surgery. Dillon Jones is out on a G League two-way contract. OG Anunoby (Right Toe Soreness), Karl-Anthony Towns (Right Eye Laceration), and Josh Hart (Right Ankle Soreness) are all listed as questionable for the game.",
+      "impact_probability": "High",
+      "evidence": "Sports Illustrated (Feb 8, 2026) states Anunoby, Towns, and Hart are listed as questionable, while McBride and Jones are out. NBA CMS Injury Report (Feb 8, 2026) confirms McBride and Jones are out, and Anunoby, Hart, and Towns are questionable. The Action Network (Feb 8, 2026) also lists Towns as doubtful (laceration), Anunoby questionable (toe), and McBride out (ankle). iHeart Sports (Feb 7, 2026) indicates four Knicks players are on the injury report, including Karl-Anthony Towns.",
+      "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQGx8zLJ-1VHNTGRiz7nRqEYyIjKlHUSuKZFcpnEmQUfwCZUnefpXkc1DuzuwV-u3agagv7g_euPH6Mp9UFa5UQSRVuu8UE5cxw9RCjlP_FhiG40dKsAHa2LcwoamPRiHSLrhFV6G1BUMIeGjiqp0wqTVJX4qiLoJuXmil-csEIa_0Uhzj52phu3NKHZQmXbLTUTXEQLkh_-PS4Z1nZP9PvZcW4"
+    },
+    {
+      "category": "Injury",
+      "entity": "Boston Celtics",
+      "description": "Jayson Tatum is out due to a right Achilles repair. Max Shulga is out on a G League two-way contract. Sam Hauser is listed as questionable due to low back spasms.",
+      "impact_probability": "High",
+      "evidence": "NBA CMS Injury Report (Feb 8, 2026) states Tatum is out and Hauser is questionable. FOX Sports 1430 (Feb 8, 2026) lists Jayson Tatum as out (Achilles) and Sam Hauser as questionable (Back). iHeart Sports (Feb 7, 2026) confirms Tatum is out and Hauser is questionable. The Times of India (Feb 7, 2026) details Tatum's injury as a Right Achilles and Hauser's as a Right thumb strain, with Tatum out indefinitely.",
+      "source_url": "https://vertexaisearch.cloud.google.com/grounding-api-redirect/AUZIYQH4vPjhIlac2JjuthjR3O44-9zL_UOBTrUH5q8_zx3WQvOxdqPwr7gzI_Rb7LXkm79nGIrodkqfa9C0jriAGBFcxEmvmldsFaVfiHEPlm5rqDuLeE4U5M3aQqHYE9vMT6GOqS4oqGLlXIMZ1NTeVkB5q1fEAn_DEycXWc2PsEIVw2vpx069Bu_XeTNk4Y0GK0VvmZKfUFA"
+    }
+  ],
+  "market_implication": "While both teams have key players injured or questionable, these are typical occurrences in NBA regular season games and are unlikely to lead to a market void or N/A resolution. The game is still expected to proceed as scheduled. The injuries primarily impact the competitive balance of the game rather than its official resolution as per the market rules.",
+  "meta": {
+    "checked_sources": [
+      "Sports Illustrated",
+      "The Action Network",
+      "The Times of India",
+      "FOX Sports 1430",
+      "iHeart Sports",
+      "NBA CMS Injury Report",
+      "Google Weather",
+      "Weather25.com",
+      "WeatherShogun"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "New York Knicks",
+      "captain": {
+        "name": "Jalen Marquis Brunson",
+        "birth_date": "1996-08-31",
+        "birth_time": null,
+        "birth_place": "New Brunswick, New Jersey",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 40.4951365,
+        "lon": -74.4439254,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      },
+      "coach": {
+        "name": "Michael Burton Brown",
+        "birth_date": "1970-03-05",
+        "birth_time": null,
+        "birth_place": "Columbus, Ohio",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 39.9622601,
+        "lon": -83.0007065,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      }
+    },
+    {
+      "team_name": "Boston Celtics",
+      "captain": {
+        "name": "Jaylen Marselles Brown",
+        "birth_date": "1996-10-24",
+        "birth_time": null,
+        "birth_place": "Marietta, Georgia",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 33.9528472,
+        "lon": -84.5496148,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      },
+      "coach": {
+        "name": "Joseph Mazzulla",
+        "birth_date": "1988-06-30",
+        "birth_time": null,
+        "birth_place": "Johnston, Rhode Island",
+        "birth_country": "U.S.",
+        "gender": "Male",
+        "lat": 41.8310404,
+        "lon": -71.5412101,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Knicks vs. Celtics",
+    "event_date": "2026-02-08",
+    "event_time": "17:30:00",
+    "event_location": "TD Garden, Boston, MA, U.S.",
+    "event_lat": 42.3662986,
+    "event_lon": -71.0621622,
+    "event_lat_dir": "N",
+    "event_lon_dir": "W",
+    "event_timezone": "America/New_York"
+  }
+}
+
+[Warning] has_edge_case = True, risk_level = Low
+Edge case detected. Still send to prediction API? [y/N]: y
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Jalen Marquis Brunson",
+      "birth_date": "1996-08-31",
+      "birth_time": null,
+      "birth_place": "New Brunswick, New Jersey",
+      "birth_country": "U.S.",
+      "gender": "Male",
+      "lat": 40.4951365,
+      "lon": -74.4439254,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "America/New_York"
+    },
+    {
+      "name": "Jaylen Marselles Brown",
+      "birth_date": "1996-10-24",
+      "birth_time": null,
+      "birth_place": "Marietta, Georgia",
+      "birth_country": "U.S.",
+      "gender": "Male",
+      "lat": 33.9528472,
+      "lon": -84.5496148,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "America/New_York"
+    }
+  ],
+  "event": {
+    "event_name": "Knicks vs. Celtics",
+    "event_date": "2026-02-08",
+    "event_time": "17:30:00",
+    "event_location": "TD Garden, Boston, MA, U.S.",
+    "event_lat": 42.3662986,
+    "event_lon": -71.0621622,
+    "event_lat_dir": "N",
+    "event_lon_dir": "W",
+    "event_timezone": "America/New_York"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "id": 37,
+  "status": "ok",
+  "PersonA": {
+    "Name": "Jalen Marquis Brunson",
+    "Details": "1996-8-31 12:0 U.S., New Brunswick, New Jersey  40.4951365(N) -74.4439254(W) America/New_York",
+    "MyPoints": "New Points Parameter 1: 78.875  TransitPoint: 60.0 [************** Paramerer 1 Starts ************** , SUN total: 19.5, MOON total: 18.0, MERCURY total: 4.25, VENUS total: 3.625, MARS total: 11.0, JUPITER total: 9.0, SATURN total: 13.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  9.0,  mar  20.0,  mer  1.5,  jup  9.0,  ven  4.5,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "69.44",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 6th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Exalted in the 7th house.",
+      "Venus is in Friendly Sign in the 4th house.",
+      "Mars is in Debilitated in the 5th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Own Sign in the 10th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Jupiter, lord of the 1st house, is placed in the 10th house (Own Sign).",
+      "Sun, lord of the 6th house, is placed in the 6th house (Own Sign).",
+      "Moon, lord of the 5th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 2nd and 9th house, is placed in the 5th house (Debilitated).",
+      "Mercury, lord of the 4th and 7th house, is placed in the 7th house (Exalted).",
+      "Venus, lord of the 3rd and 8th house, is placed in the 4th house (Friendly).",
+      "Saturn, lord of the 11th and 12th house, is placed in the 1st house (Neutral).",
+      "Jupiter, lord of the 10th and 1st house, is placed in the 10th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 8th house.",
+      "Mercury is in Neutral Sign in the 12th house.",
+      "Venus is in Friendly Sign in the 12th house.",
+      "Mars is in Exalted in the 11th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Enemy Sign in the 4th house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Jaylen Marselles Brown",
+    "Details": "1996-10-24 12:0 U.S., Marietta, Georgia  33.9528472(N) -84.5496148(W) America/New_York",
+    "MyPoints": "New Points Parameter 1: 77.125  TransitPoint: 60.0 [************** Paramerer 1 Starts ************** , SUN total: 14.0, MOON total: 18.0, MERCURY total: 4.25   Combusted 5 dedcuted: -0.75, VENUS total: 3.875, MARS total: 19.5, JUPITER total: 9.0, SATURN total: 13.5, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  9.0,  mar  20.0,  mer  1.5,  jup  9.0,  ven  4.5,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "68.56",
+    "planetInfoHouseWise": [
+      "Sun is in Debilitated in the 8th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Friendly Sign in the 8th house.",
+      "Venus is in Debilitated in the 7th house.",
+      "Mars is in Friendly Sign in the 6th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Own Sign in the 10th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Jupiter, lord of the 1st house, is placed in the 10th house (Own Sign).",
+      "Sun, lord of the 6th house, is placed in the 8th house (Debilitated).",
+      "Moon, lord of the 5th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 2nd and 9th house, is placed in the 6th house (Friendly).",
+      "Mercury, lord of the 4th and 7th house, is placed in the 8th house (Friendly).",
+      "Venus, lord of the 3rd and 8th house, is placed in the 7th house (Debilitated).",
+      "Saturn, lord of the 11th and 12th house, is placed in the 1st house (Neutral).",
+      "Jupiter, lord of the 10th and 1st house, is placed in the 10th house (Own Sign)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 8th house.",
+      "Mercury is in Neutral Sign in the 12th house.",
+      "Venus is in Friendly Sign in the 12th house.",
+      "Mars is in Exalted in the 11th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Enemy Sign in the 4th house."
+    ]
+  }
+}
+
+[Info] Prediction saved to predictedmarket/predictions.csv
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Jalen Marquis Brunson: 69.44%
+Jaylen Marselles Brown: 68.56%
+
+Predicted Winner: Jalen Marquis Brunson (69.44% win probability)
+==================================================

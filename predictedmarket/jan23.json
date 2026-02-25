@@ -1,0 +1,272 @@
+
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "Seattle Seahawks",
+      "captain": {
+        "name": "Jaxon Smith-Njigba",
+        "birth_date": "2002-02-14",
+        "birth_time": "unknown",
+        "birth_place": "Nacogdoches, Texas",
+        "birth_country": "U.S."
+      },
+      "coach": {
+        "name": "Mike Macdonald",
+        "birth_date": "1987-06-26",
+        "birth_time": "unknown",
+        "birth_place": "Boston, Massachusetts",
+        "birth_country": "U.S."
+      }
+    },
+    {
+      "team_name": "New England Patriots",
+      "captain": {
+        "name": "Drake Lee Maye",
+        "birth_date": "2002-08-30",
+        "birth_time": "unknown",
+        "birth_place": "Huntersville, North Carolina",
+        "birth_country": "U.S."
+      },
+      "coach": {
+        "name": "Michael George Vrabel",
+        "birth_date": "1975-08-14",
+        "birth_time": "unknown",
+        "birth_place": "Akron, Ohio",
+        "birth_country": "U.S."
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Super Bowl LX - Seattle Seahawks vs. New England Patriots",
+    "event_date": "2026-02-08",
+    "event_time": "23:30:00",
+    "event_location": "Levi's Stadium, Santa Clara, California, U.S."
+  }
+}
+
+=== Edge Case Analysis ===
+{
+  "has_edge_case": false,
+  "risk_level": "None",
+  "edge_cases": [],
+  "market_implication": "All markets are expected to resolve as per their stated rules, with no identified extraordinary risks of void, N/A, or push outcomes beyond standard game occurrences (e.g., a tie for the main market).",
+  "meta": {
+    "checked_sources": [
+      "NFL.com Player Rosters/Updates (2025-2026 season)",
+      "Wikipedia (Player NFL Teams, Career History)",
+      "Spotrac.com (Player Contracts, Team Affiliation)",
+      "NFL.com News/Injury Reports (Super Bowl LX - February 2026)",
+      "CBS Sports (Super Bowl LX Injury Reports, Player News)",
+      "Sports Interaction (Super Bowl LX Injury Reports)",
+      "FOX Sports (Super Bowl LX Injury Reports)",
+      "NESN (Patriots Player News/Injury Updates)",
+      "Pro Football Network (Player Injury Updates)",
+      "RotoWire (Player Injury News)",
+      "Yahoo Sports (Player News)",
+      "Associated Press (Player News)",
+      "The Canadian Press (Player News)",
+      "98.5 The Sports Hub (Patriots Player News)",
+      "AccuWeather/WeatherShogun (Santa Clara, CA Weather Forecast Feb 8, 2026)"
+    ]
+  }
+}
+
+=== Structured Event (after geo enrichment) ===
+{
+  "event_type": "teams",
+  "candidates": [
+    {
+      "team_name": "Seattle Seahawks",
+      "captain": {
+        "name": "Jaxon Smith-Njigba",
+        "birth_date": "2002-02-14",
+        "birth_time": null,
+        "birth_place": "Nacogdoches, Texas",
+        "birth_country": "U.S.",
+        "lat": 31.5970503,
+        "lon": -94.5927451,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/Chicago"
+      },
+      "coach": {
+        "name": "Mike Macdonald",
+        "birth_date": "1987-06-26",
+        "birth_time": null,
+        "birth_place": "Boston, Massachusetts",
+        "birth_country": "U.S.",
+        "lat": 42.3588336,
+        "lon": -71.0578303,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      }
+    },
+    {
+      "team_name": "New England Patriots",
+      "captain": {
+        "name": "Drake Lee Maye",
+        "birth_date": "2002-08-30",
+        "birth_time": null,
+        "birth_place": "Huntersville, North Carolina",
+        "birth_country": "U.S.",
+        "lat": 35.4108278,
+        "lon": -80.8429304,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      },
+      "coach": {
+        "name": "Michael George Vrabel",
+        "birth_date": "1975-08-14",
+        "birth_time": null,
+        "birth_place": "Akron, Ohio",
+        "birth_country": "U.S.",
+        "lat": 41.083064,
+        "lon": -81.518485,
+        "lat_dir": "N",
+        "lon_dir": "W",
+        "birth_timezone": "America/New_York"
+      }
+    }
+  ],
+  "event": {
+    "event_name": "Super Bowl LX - Seattle Seahawks vs. New England Patriots",
+    "event_date": "2026-02-08",
+    "event_time": "23:30:00",
+    "event_location": "Levi's Stadium, Santa Clara, California, U.S.",
+    "event_lat": 37.4029867,
+    "event_lon": -121.9696489,
+    "event_lat_dir": "N",
+    "event_lon_dir": "W",
+    "event_timezone": "America/Los_Angeles"
+  }
+}
+
+=== Sending payload to prediction API ===
+Payload preview:
+{
+  "event_type": "1v1",
+  "candidates": [
+    {
+      "name": "Jaxon Smith-Njigba",
+      "birth_date": "2002-02-14",
+      "birth_time": null,
+      "birth_place": "Nacogdoches, Texas",
+      "birth_country": "U.S.",
+      "gender": "unknown",
+      "lat": 31.5970503,
+      "lon": -94.5927451,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "America/Chicago"
+    },
+    {
+      "name": "Drake Lee Maye",
+      "birth_date": "2002-08-30",
+      "birth_time": null,
+      "birth_place": "Huntersville, North Carolina",
+      "birth_country": "U.S.",
+      "gender": "unknown",
+      "lat": 35.4108278,
+      "lon": -80.8429304,
+      "lat_dir": "N",
+      "lon_dir": "W",
+      "birth_timezone": "America/New_York"
+    }
+  ],
+  "event": {
+    "event_name": "Super Bowl LX - Seattle Seahawks vs. New England Patriots",
+    "event_date": "2026-02-08",
+    "event_time": "23:30:00",
+    "event_location": "Levi's Stadium, Santa Clara, California, U.S.",
+    "event_lat": 37.4029867,
+    "event_lon": -121.9696489,
+    "event_lat_dir": "N",
+    "event_lon_dir": "W",
+    "event_timezone": "America/Los_Angeles"
+  }
+}
+
+=== Prediction API Response ===
+{
+  "status": "ok",
+  "PersonA": {
+    "Name": "Jaxon Smith-Njigba",
+    "Details": "2002-2-14 12:0 U.S., Nacogdoches, Texas  31.5970503(N) -94.5927451(W) America/Chicago",
+    "MyPoints": "New Points Parameter 1: 69.625  TransitPoint: 60.0 [************** Paramerer 1 Starts ************** , SUN total: 14.0, MOON total: 18.0, MERCURY total: 3.625, VENUS total: 3.25   Combusted 5 dedcuted: -1.75, MARS total: 12.0, JUPITER total: 7.75, SATURN total: 16.0, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  10.0,  moo  9.0,  mar  20.0,  mer  1.5,  jup  9.0,  ven  4.5,  sat  6.0, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "64.81",
+    "planetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 12th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Friendly Sign in the 12th house.",
+      "Mars is in Friendly Sign in the 1st house.",
+      "Saturn is in Friendly Sign in the 3rd house.",
+      "Jupiter is in Enemy Sign in the 4th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Jupiter, lord of the 1st house, is placed in the 4th house (Enemy).",
+      "Sun, lord of the 6th house, is placed in the 12th house (Enemy).",
+      "Moon, lord of the 5th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 2nd and 9th house, is placed in the 1st house (Friendly).",
+      "Mercury, lord of the 4th and 7th house, is placed in the 11th house (Neutral).",
+      "Venus, lord of the 3rd and 8th house, is placed in the 12th house (Friendly).",
+      "Saturn, lord of the 11th and 12th house, is placed in the 3rd house (Friendly).",
+      "Jupiter, lord of the 10th and 1st house, is placed in the 4th house (Enemy)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 8th house.",
+      "Mercury is in Neutral Sign in the 12th house.",
+      "Venus is in Friendly Sign in the 12th house.",
+      "Mars is in Exalted in the 11th house.",
+      "Saturn is in Neutral Sign in the 1st house.",
+      "Jupiter is in Enemy Sign in the 4th house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Drake Lee Maye",
+    "Details": "2002-8-30 12:0 U.S., Huntersville, North Carolina  35.4108278(N) -80.8429304(W) America/New_York",
+    "MyPoints": "New Points Parameter 1: 68.875  TransitPoint: 64.9 [************** Paramerer 1 Starts ************** , SUN total: 17.0, MOON total: 18.0, MERCURY total: 4.5, VENUS total: 4.125, MARS total: 16.5   Combusted 5 dedcuted: 11.5, JUPITER total: 6.75, SATURN total: 15.0,  Rahu Moon Conjuction -8 deducted: 68.875, ************** Paramerer 1 End ************** ]  [************** Paramerer 2 Transits Starts ************** ,  sun  7.5,  moo  15.0,  mar  18.0,  mer  3.75,  jup  10.0,  ven  3.15,  sat  7.5, ************** Paramerer 2 Transits End ************** ]",
+    "WinPercentage": "66.89",
+    "planetInfoHouseWise": [
+      "Sun is in Own Sign in the 4th house.",
+      "Moon is in Exalted in the 1st house.",
+      "Mercury is in Exalted in the 5th house.",
+      "Venus is in Debilitated in the 5th house.",
+      "Mars is in Friendly Sign in the 4th house.",
+      "Saturn is in Friendly Sign in the 2nd house.",
+      "Jupiter is in Exalted in the 3rd house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Venus, lord of the 1st house, is placed in the 5th house (Debilitated).",
+      "Sun, lord of the 4th house, is placed in the 4th house (Own Sign).",
+      "Moon, lord of the 3rd house, is placed in the 1st house (Exalted).",
+      "Mars, lord of the 12th and 7th house, is placed in the 4th house (Friendly).",
+      "Mercury, lord of the 2nd and 5th house, is placed in the 5th house (Exalted).",
+      "Venus, lord of the 1st and 6th house, is placed in the 5th house (Debilitated).",
+      "Saturn, lord of the 9th and 10th house, is placed in the 2nd house (Friendly).",
+      "Jupiter, lord of the 8th and 11th house, is placed in the 3rd house (Exalted)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 9th house.",
+      "Moon is in Neutral Sign in the 6th house.",
+      "Mercury is in Neutral Sign in the 10th house.",
+      "Venus is in Friendly Sign in the 10th house.",
+      "Mars is in Exalted in the 9th house.",
+      "Saturn is in Neutral Sign in the 11th house.",
+      "Jupiter is in Enemy Sign in the 2nd house."
+    ]
+  }
+}
+
+======================================================================
+PREDICTION SUMMARY
+======================================================================
+Jaxon Smith-Njigba: 64.81%
+Drake Lee Maye: 66.89%
+
+Predicted Winner: Drake Lee Maye (66.89% win probability)
+=====================================================

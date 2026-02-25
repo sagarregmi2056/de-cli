@@ -1,0 +1,71 @@
+{
+  "status": "ok",
+  "PersonA": {
+    "Name": "Linda Noskov\u00e1",
+    "Details": "2004-11-17 12:0 Czech Republic, Vset\u00edn, Zl\u00edn Region  49.3389775(N) 17.9961534(E) Europe/Prague",
+    "MyPoints": "PWP: 68.75  HWP: 90.0  TWT: 62.63000011444092",
+    "WinPercentage": "73.79",
+    "planetInfoHouseWise": [
+      "Sun is in Friendly Sign in the 11th house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 11th house.",
+      "Venus is in Debilitated in the 9th house.",
+      "Mars is in Neutral Sign in the 10th house.",
+      "Saturn is in Enemy Sign in the 7th house.",
+      "Jupiter is in Enemy Sign in the 9th house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Saturn, lord of the 1st house, is placed in the 7th house (Enemy).",
+      "Sun, lord of the 8th house, is placed in the 11th house (Friendly).",
+      "Moon, lord of the 7th house, is placed in the 1st house (Neutral).",
+      "Mars, lord of the 4th and 11th house, is placed in the 10th house (Neutral).",
+      "Mercury, lord of the 6th and 9th house, is placed in the 11th house (Neutral).",
+      "Venus, lord of the 5th and 10th house, is placed in the 9th house (Debilitated).",
+      "Saturn, lord of the 1st and 2nd house, is placed in the 7th house (Enemy).",
+      "Jupiter, lord of the 12th and 3rd house, is placed in the 9th house (Enemy)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 1st house.",
+      "Moon is in Neutral Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 1st house.",
+      "Venus is in Friendly Sign in the 1st house.",
+      "Mars is in Exalted in the 1st house.",
+      "Saturn is in Neutral Sign in the 3rd house.",
+      "Jupiter is in Enemy Sign in the 6th house."
+    ]
+  },
+  "PersonB": {
+    "Name": "Taylah Preston",
+    "Details": "2005-10-27 12:0 Australia, Joondalup, Western Australia  -31.77955(S) 115.7647448(E) Australia/Perth",
+    "MyPoints": "PWP: 43.5  HWP: 77.0  TWT: 65.04999995231628",
+    "WinPercentage": "61.85",
+    "planetInfoHouseWise": [
+      "Sun is in Debilitated in the 3rd house.",
+      "Moon is in Friendly Sign in the 1st house.",
+      "Mercury is in Neutral Sign in the 4th house.",
+      "Venus is in Neutral Sign in the 4th house.",
+      "Mars is in Own Sign in the 9th house.",
+      "Saturn is in Enemy Sign in the 12th house.",
+      "Jupiter is in Enemy Sign in the 3rd house."
+    ],
+    "HouseLordInAnotherHouse": [
+      "Ascedent Sun, lord of the 1st house, is placed in the 3rd house (Debilitated).",
+      "Sun, lord of the 1st house, is placed in the 3rd house (Debilitated).",
+      "Moon, lord of the 12th house, is placed in the 1st house (Friendly).",
+      "Mars, lord of the 9th and 4th house, is placed in the 9th house (Own Sign).",
+      "Mercury, lord of the 11th and 2nd house, is placed in the 4th house (Neutral).",
+      "Venus, lord of the 10th and 3rd house, is placed in the 4th house (Neutral).",
+      "Saturn, lord of the 6th and 7th house, is placed in the 12th house (Enemy).",
+      "Jupiter, lord of the 5th and 8th house, is placed in the 3rd house (Enemy)."
+    ],
+    "TransitplanetInfoHouseWise": [
+      "Sun is in Enemy Sign in the 6th house.",
+      "Moon is in Neutral Sign in the 6th house.",
+      "Mercury is in Neutral Sign in the 6th house.",
+      "Venus is in Friendly Sign in the 6th house.",
+      "Mars is in Exalted in the 6th house.",
+      "Saturn is in Neutral Sign in the 8th house.",
+      "Jupiter is in Enemy Sign in the 11th house."
+    ]
+  }
+}

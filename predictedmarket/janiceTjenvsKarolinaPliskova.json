@@ -1,0 +1,71 @@
+{
+    "status": "ok",
+    "PersonA": {
+      "Name": "Janice Tjen",
+      "Details": "2002-5-6 12:0 Indonesia, Jakarta  -6.1754049(S) 106.827168(E) Asia/Jakarta",
+      "MyPoints": "PWP: 73.5  HWP: 77.0  TWT: 48.0",
+      "WinPercentage": "66.17",
+      "planetInfoHouseWise": [
+        "Sun is in Exalted in the 3rd house.",
+        "Moon is in Neutral Sign in the 1st house.",
+        "Mercury is in Friendly Sign in the 4th house.",
+        "Venus is in Own Sign in the 4th house.",
+        "Mars is in Neutral Sign in the 4th house.",
+        "Saturn is in Friendly Sign in the 4th house.",
+        "Jupiter is in Enemy Sign in the 5th house."
+      ],
+      "HouseLordInAnotherHouse": [
+        "Ascedent Saturn, lord of the 1st house, is placed in the 4th house (Friendly).",
+        "Sun, lord of the 7th house, is placed in the 3rd house (Exalted).",
+        "Moon, lord of the 6th house, is placed in the 1st house (Neutral).",
+        "Mars, lord of the 3rd and 10th house, is placed in the 4th house (Neutral).",
+        "Mercury, lord of the 5th and 8th house, is placed in the 4th house (Friendly).",
+        "Venus, lord of the 4th and 9th house, is placed in the 4th house (Own Sign).",
+        "Saturn, lord of the 12th and 1st house, is placed in the 4th house (Friendly).",
+        "Jupiter, lord of the 11th and 2nd house, is placed in the 5th house (Enemy)."
+      ],
+      "TransitplanetInfoHouseWise": [
+        "Sun is in Enemy Sign in the 12th house.",
+        "Moon is in Neutral Sign in the 12th house.",
+        "Mercury is in Neutral Sign in the 12th house.",
+        "Venus is in Friendly Sign in the 12th house.",
+        "Mars is in Exalted in the 12th house.",
+        "Saturn is in Neutral Sign in the 2nd house.",
+        "Jupiter is in Enemy Sign in the 5th house."
+      ]
+    },
+    "PersonB": {
+      "Name": "Karolina Pliskova",
+      "Details": "1992-3-21 12:0 Czech Republic, Louny, \u00dast\u00ed nad Labem Region  50.3572914(N) 13.7969195(E) Europe/Prague",
+      "MyPoints": "PWP: 71.5  HWP: 84.0  TWT: 56.5",
+      "WinPercentage": "70.67",
+      "planetInfoHouseWise": [
+        "Sun is in Friendly Sign in the 6th house.",
+        "Moon is in Neutral Sign in the 1st house.",
+        "Mercury is in Debilitated in the 6th house.",
+        "Venus is in Friendly Sign in the 5th house.",
+        "Mars is in Neutral Sign in the 5th house.",
+        "Saturn is in Own Sign in the 4th house.",
+        "Jupiter is in Friendly Sign in the 11th house."
+      ],
+      "HouseLordInAnotherHouse": [
+        "Ascedent Venus, lord of the 1st house, is placed in the 5th house (Friendly).",
+        "Sun, lord of the 11th house, is placed in the 6th house (Friendly).",
+        "Moon, lord of the 10th house, is placed in the 1st house (Neutral).",
+        "Mars, lord of the 7th and 2nd house, is placed in the 5th house (Neutral).",
+        "Mercury, lord of the 9th and 12th house, is placed in the 6th house (Debilitated).",
+        "Venus, lord of the 8th and 1st house, is placed in the 5th house (Friendly).",
+        "Saturn, lord of the 4th and 5th house, is placed in the 4th house (Own Sign).",
+        "Jupiter, lord of the 3rd and 6th house, is placed in the 11th house (Friendly)."
+      ],
+      "TransitplanetInfoHouseWise": [
+        "Sun is in Enemy Sign in the 4th house.",
+        "Moon is in Neutral Sign in the 4th house.",
+        "Mercury is in Neutral Sign in the 4th house.",
+        "Venus is in Friendly Sign in the 4th house.",
+        "Mars is in Exalted in the 4th house.",
+        "Saturn is in Neutral Sign in the 6th house.",
+        "Jupiter is in Enemy Sign in the 9th house."
+      ]
+    }
+  }

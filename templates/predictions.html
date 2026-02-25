@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Get Predictions - Polymarket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: #0b1120;
+        color: #e5e7eb;
+      }
+      header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #1f2937;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      header h1 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: #f9fafb;
+      }
+      .nav-links {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .nav-links a {
+        padding: 0.35rem 0.75rem;
+        border-radius: 9999px;
+        border: 1px solid #374151;
+        text-decoration: none;
+        color: #9ca3af;
+        font-size: 0.85rem;
+      }
+      .nav-links a:hover {
+        background: #1f2937;
+        color: #e5e7eb;
+      }
+      main {
+        padding: 2rem;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .form-container {
+        background: radial-gradient(circle at top, #111827, #020617);
+        border: 1px solid #1f2937;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+      }
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: #e5e7eb;
+        font-weight: 500;
+      }
+      input[type="url"] {
+        width: 100%;
+        padding: 0.75rem;
+        background: #020617;
+        border: 1px solid #374151;
+        border-radius: 0.5rem;
+        color: #e5e7eb;
+        font-size: 0.95rem;
+        box-sizing: border-box;
+      }
+      input[type="url"]:focus {
+        outline: none;
+        border-color: #2563eb;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        background: #2563eb;
+        color: #f9fafb;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      button:hover {
+        background: #1d4ed8;
+      }
+      button:disabled {
+        background: #374151;
+        cursor: not-allowed;
+      }
+      .error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid #ef4444;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        color: #fecaca;
+        margin-bottom: 1.5rem;
+      }
+      .result-container {
+        background: radial-gradient(circle at top, #111827, #020617);
+        border: 1px solid #1f2937;
+        border-radius: 0.75rem;
+        padding: 2rem;
+      }
+      .result-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #1f2937;
+      }
+      .result-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin: 0 0 0.5rem;
+      }
+      .result-meta {
+        font-size: 0.85rem;
+        color: #9ca3af;
+      }
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 9999px;
+        border: 1px solid #4b5563;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        display: inline-block;
+        margin-right: 0.5rem;
+      }
+      .badge-teams {
+        border-color: #10b981;
+        color: #6ee7b7;
+      }
+      .badge-1v1 {
+        border-color: #3b82f6;
+        color: #93c5fd;
+      }
+      .badge-risk-high {
+        border-color: #ef4444;
+        color: #fecaca;
+      }
+      .badge-risk-medium {
+        border-color: #f97316;
+        color: #fed7aa;
+      }
+      .predictions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+      }
+      .prediction-card {
+        background: #020617;
+        border: 1px solid #1f2937;
+        border-radius: 0.5rem;
+        padding: 1.25rem;
+      }
+      .prediction-card.winner {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.05);
+      }
+      .prediction-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #f9fafb;
+        margin: 0 0 0.5rem;
+      }
+      .prediction-percentage {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #60a5fa;
+        margin: 0.5rem 0;
+      }
+      .prediction-card.winner .prediction-percentage {
+        color: #34d399;
+      }
+      .section {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #1f2937;
+      }
+      .section h3 {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #e5e7eb;
+        margin: 0 0 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .section p {
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+        color: #d1d5db;
+      }
+      .muted {
+        color: #6b7280;
+      }
+      .link {
+        color: #60a5fa;
+        text-decoration: none;
+        font-size: 0.9rem;
+      }
+      .link:hover {
+        text-decoration: underline;
+      }
+      .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 0.75rem;
+      }
+      .info-item {
+        background: #020617;
+        border: 1px solid #1f2937;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+      }
+      .info-item strong {
+        display: block;
+        font-size: 0.75rem;
+        color: #9ca3af;
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .info-item span {
+        display: block;
+        font-size: 0.9rem;
+        color: #e5e7eb;
+      }
+      .loader {
+        display: none;
+        text-align: center;
+        padding: 2rem;
+      }
+      .loader.active {
+        display: block;
+      }
+      .spinner {
+        border: 3px solid #1f2937;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .loader-text {
+        color: #9ca3af;
+        font-size: 0.9rem;
+      }
+      .form-container.loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+      .result-container.loading {
+        opacity: 0.6;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Get Predictions</h1>
+      <nav class="nav-links">
+        <a href="/">View Markets</a>
+      </nav>
+    </header>
+    <main>
+      <div class="form-container" id="formContainer">
+        <form method="POST" action="/predictions" id="predictionsForm">
+          <div class="form-group">
+            <label for="url">Paste Polymarket Game URL</label>
+            <input
+              type="url"
+              id="url"
+              name="url"
+              placeholder="https://polymarket.com/event/..."
+              value="{{ url or '' }}"
+              required
+            />
+          </div>
+          <button type="submit" id="submitButton">Get Predictions</button>
+        </form>
+      </div>
+
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <div class="loader-text">Processing prediction... This may take a moment.</div>
+      </div>
+
+      {% if error %}
+      <div class="error">
+        <strong>Error:</strong> {{ error }}
+      </div>
+      {% endif %}
+
+      {% if success %}
+      <div class="result-container">
+        <div class="result-header">
+          <h2 class="result-title">{{ market_title }}</h2>
+          <div class="result-meta">
+            <span class="badge {% if event_type == 'teams' %}badge-teams{% else %}badge-1v1{% endif %}">
+              Detected: {{ detected_market_type or event_type }}
+            </span>
+            {% if api_event_type %}
+            <span class="badge badge-teams">
+              API Type: {{ api_event_type }}
+            </span>
+            {% endif %}
+            {% if has_edge_case %}
+            <span class="badge {% if risk_level == 'High' %}badge-risk-high{% elif risk_level == 'Medium' %}badge-risk-medium{% endif %}">
+              Risk: {{ risk_level }}
+            </span>
+            {% endif %}
+            {% if url %}
+            <a href="{{ url }}" target="_blank" rel="noopener noreferrer" class="link" style="margin-left: 1rem;">
+              View on Polymarket →
+            </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="predictions">
+          <div class="prediction-card {% if winner_name == person_a.get('Name') %}winner{% endif %}">
+            <h3 class="prediction-name">{{ person_a.get('Name', 'PersonA') }}</h3>
+            <div class="prediction-percentage">
+              {{ "%.2f" | format(person_a.get('WinPercentage', 0) | float) }}%
+            </div>
+          </div>
+          <div class="prediction-card {% if winner_name == person_b.get('Name') %}winner{% endif %}">
+            <h3 class="prediction-name">{{ person_b.get('Name', 'PersonB') }}</h3>
+            <div class="prediction-percentage">
+              {{ "%.2f" | format(person_b.get('WinPercentage', 0) | float) }}%
+            </div>
+          </div>
+        </div>
+
+        {% if winner_name %}
+        <div class="section">
+          <h3>Predicted Winner</h3>
+          <p>
+            <strong>{{ winner_name }}</strong> with
+            <strong>{{ "%.2f" | format(winner_prob) }}%</strong> win probability
+          </p>
+          <p class="muted">
+            Internal type: <strong>{{ event_type }}</strong>
+            {% if api_event_type %}
+            · API enum: <strong>{{ api_event_type }}</strong>
+            {% endif %}
+          </p>
+        </div>
+        {% endif %}
+
+        {% if saved_to_db %}
+        <div class="section">
+          <p style="color: #10b981; font-size: 0.9rem;">
+            ✓ Prediction saved to database
+          </p>
+        </div>
+        {% endif %}
+
+        {% if teams_info %}
+        <div class="section">
+          <h3>Teams Information</h3>
+          <div class="info-grid">
+            {% for team in teams_info %}
+            <div class="info-item">
+              <strong>Team</strong>
+              <span>{{ team.team_name }}</span>
+              {% if team.captain %}
+              <strong style="margin-top: 0.5rem;">Captain</strong>
+              <span>{{ team.captain }}</span>
+              {% endif %}
+              {% if team.coach %}
+              <strong style="margin-top: 0.5rem;">Coach</strong>
+              <span>{{ team.coach }}</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if candidates_info %}
+        <div class="section">
+          <h3>Candidates Information</h3>
+          <div class="info-grid">
+            {% for cand in candidates_info %}
+            <div class="info-item">
+              <strong>Name</strong>
+              <span>{{ cand.name }}</span>
+              {% if cand.birth_date %}
+              <strong style="margin-top: 0.5rem;">Birth Date</strong>
+              <span>{{ cand.birth_date }}</span>
+              {% endif %}
+              {% if cand.birth_country %}
+              <strong style="margin-top: 0.5rem;">Country</strong>
+              <span>{{ cand.birth_country }}</span>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if market_description %}
+        <div class="section">
+          <h3>Market Description</h3>
+          <p>{{ market_description }}</p>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </main>
+    <script>
+      // Show loader when form is submitted
+      document.getElementById('predictionsForm').addEventListener('submit', function(e) {
+        const loader = document.getElementById('loader');
+        const formContainer = document.getElementById('formContainer');
+        const submitButton = document.getElementById('submitButton');
+        
+        // Show loader
+        loader.classList.add('active');
+        formContainer.classList.add('loading');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
+      });
+
+      // Flag from server: do we already have a result or error on initial load?
+      // Use a string literal so template syntax stays valid JS before rendering.
+      const hasInitialResult = "{{ '1' if (success|default(false) or error|default(false)) else '0' }}" === "1";
+
+      // Hide loader if page loads with no result (fresh page load)
+      window.addEventListener('load', function() {
+        if (!hasInitialResult) {
+          const loader = document.getElementById('loader');
+          if (loader) {
+            loader.classList.remove('active');
+          }
+        }
+      });
+    </script>
+  </body>
+</html>
