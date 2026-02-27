@@ -172,8 +172,7 @@ def _fetch_event_data(event_id: Optional[str] = None, slug: Optional[str] = None
                 # This avoids 404 errors when trying to fetch events that don't exist
                 return market
         
-        # Strategy 2: Try partial slug match (in case slug format differs slightly)
-        # Some URLs might have slightly different slug formats
+
         try:
             # Try without prefix (e.g., "sea2-ant-2026-02-21" instead of "ufc-sea2-ant-2026-02-21")
             slug_parts = slug.split("-")
@@ -195,9 +194,9 @@ def _fetch_event_data(event_id: Optional[str] = None, slug: Optional[str] = None
             from gamma_client import GAMMA_API_BASE
             import requests
             
-            # Try to fetch events and search for our slug
+          
             events_url = f"{GAMMA_API_BASE}/events"
-            # Try with slug in query params (some APIs might support this)
+            
             response = requests.get(events_url, params={"slug": slug}, timeout=10)
             if response.status_code == 200:
                 data = response.json()
@@ -211,8 +210,6 @@ def _fetch_event_data(event_id: Optional[str] = None, slug: Optional[str] = None
         except Exception:
             pass
     
-    # Fallback: Try event_id ONLY if we don't have a slug (slug is more reliable)
-    # If we have both slug and event_id, and slug lookup failed, the event_id likely won't work either
     if event_id and not slug:
         event = get_event(event_id)
         if event:

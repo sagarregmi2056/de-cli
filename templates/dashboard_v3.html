@@ -114,6 +114,13 @@
         font-weight: 700;
       }
 
+      .btn-primary:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+        transform: none;
+        box-shadow: none;
+      }
+
       .btn-secondary {
         background: rgba(148, 163, 184, 0.25);
         color: #e2e8f0;
@@ -997,10 +1004,11 @@
         <form method="POST" action="/predict" class="controls" id="predictForm">
           <div class="field" style="flex: 1; min-width: 320px;">
             <label for="url">Polymarket URL</label>
-            <input id="url" type="url" name="url" required placeholder="https://polymarket.com/event/..." style="width: 100%;" />
+            <input id="url" type="url" name="url" required placeholder="https://polymarket.com/sports/ufc/..." style="width: 100%;" />
           </div>
-          <button class="btn btn-primary" type="submit">Predict and Save</button>
+          <button class="btn btn-primary" id="predictSubmitBtn" type="submit" disabled>Predict and Save</button>
         </form>
+        <div class="error" id="predictUrlValidation" style="display:none;"></div>
         <div class="loader" id="predictLoader">
           <div class="spinner"></div>
           Waiting for prediction...
@@ -1169,8 +1177,130 @@
 
       const predictForm = document.getElementById("predictForm");
       const predictLoader = document.getElementById("predictLoader");
-      if (predictForm && predictLoader) {
-        predictForm.addEventListener("submit", () => {
+      const predictInput = document.getElementById("url");
+      const predictSubmitBtn = document.getElementById("predictSubmitBtn");
+      const predictUrlValidation = document.getElementById("predictUrlValidation");
+
+      const supportedMarketTokens = new Set([
+        "ufc", "mma", "zuffa",
+        "boxing",
+        "tennis", "atp", "wta",
+        "cricket", "international", "t20", "odi", "test",
+        "ipl", "bbl", "psl", "blast", "cpl", "bpl", "sa20", "ilt20", "wpl", "mlc", "wncl", "lpl", "csa",
+        "football", "soccer", "epl", "nfl", "cfb", "ncaaf", "college-football",
+        "basketball", "nba", "wnba", "ncaab", "ncaawb",
+        "baseball", "mlb",
+        "hockey", "nhl",
+      ]);
+
+      const genericPathSegments = new Set(["event", "events", "market", "markets", "sports"]);
+
+      function isSupportedToken(token) {
+        return supportedMarketTokens.has((token || "").toLowerCase());
+      }
+
+      function validatePredictUrl(rawValue) {
+        const raw = (rawValue || "").trim();
+        if (!raw) {
+          return { valid: false, message: "", empty: true };
+        }
+
+        let parsed;
+        try {
+          parsed = new URL(raw);
+        } catch (e) {
+          return { valid: false, message: "Enter a valid URL (example: https://polymarket.com/sports/ufc/...).", empty: false };
+        }
+
+        const protocol = (parsed.protocol || "").toLowerCase();
+        const hostname = (parsed.hostname || "").toLowerCase();
+        if (protocol !== "https:" && protocol !== "http:") {
+          return { valid: false, message: "URL must start with http:// or https://.", empty: false };
+        }
+        if (hostname !== "polymarket.com" && hostname !== "www.polymarket.com") {
+          return { valid: false, message: "Only polymarket.com URLs are allowed.", empty: false };
+        }
+
+        const pathParts = parsed.pathname
+          .split("/")
+          .map((part) => part.trim().toLowerCase())
+          .filter(Boolean);
+        if (pathParts.length === 0) {
+          return { valid: false, message: "URL path is missing market details.", empty: false };
+        }
+
+        if (pathParts[0] === "sports" && pathParts.length > 1 && !isSupportedToken(pathParts[1])) {
+          return { valid: false, message: "Unsupported sports category in URL path.", empty: false };
+        }
+
+        const allTokens = new Set();
+        pathParts.forEach((part) => {
+          allTokens.add(part);
+          part
+            .toLowerCase()
+            .split(/[^a-z0-9]+/g)
+            .filter(Boolean)
+            .forEach((token) => allTokens.add(token));
+        });
+        const queryTokens = parsed.search.toLowerCase().replace(/[^a-z0-9-]+/g, " ").split(" ").filter(Boolean);
+        queryTokens.forEach((token) => allTokens.add(token));
+
+        let hasSupportedSport = false;
+        for (const token of allTokens) {
+          if (isSupportedToken(token)) {
+            hasSupportedSport = true;
+            break;
+          }
+        }
+        if (!hasSupportedSport) {
+          return { valid: false, message: "Only supported Polymarket sports/leagues URLs are allowed.", empty: false };
+        }
+
+        const hasNumericId = pathParts.some((part) => /^\d+$/.test(part));
+        const hasQueryId = Boolean(parsed.searchParams.get("id") || parsed.searchParams.get("event_id"));
+        const lastPart = pathParts[pathParts.length - 1];
+        const hasSlugLikeTail = Boolean(lastPart && !genericPathSegments.has(lastPart));
+        if (!hasNumericId && !hasQueryId && !hasSlugLikeTail) {
+          return { valid: false, message: "URL is missing a market slug or event id.", empty: false };
+        }
+
+        return { valid: true, message: "", empty: false };
+      }
+
+      function updatePredictValidation() {
+        if (!predictInput || !predictSubmitBtn) {
+          return;
+        }
+
+        const result = validatePredictUrl(predictInput.value);
+        predictSubmitBtn.disabled = !result.valid;
+
+        if (!predictUrlValidation) {
+          return;
+        }
+
+        if (!result.valid && !result.empty) {
+          predictUrlValidation.textContent = result.message;
+          predictUrlValidation.style.display = "block";
+        } else {
+          predictUrlValidation.textContent = "";
+          predictUrlValidation.style.display = "none";
+        }
+      }
+
+      if (predictForm && predictLoader && predictInput && predictSubmitBtn) {
+        updatePredictValidation();
+        predictInput.addEventListener("input", updatePredictValidation);
+        predictInput.addEventListener("blur", updatePredictValidation);
+
+        predictForm.addEventListener("submit", (event) => {
+          const result = validatePredictUrl(predictInput.value);
+          if (!result.valid) {
+            event.preventDefault();
+            updatePredictValidation();
+            return;
+          }
+          predictSubmitBtn.disabled = true;
           predictLoader.classList.add("active");
         });
       }
