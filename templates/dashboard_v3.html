@@ -776,6 +776,7 @@
             <thead>
               <tr>
             <th>Market</th>
+            <th>Date</th>
             <th>Event Type</th>
             <th>Type</th>
             <th>Candidates</th>
@@ -795,8 +796,8 @@
                 <td>
                   <div class="title">{{ m.title }}</div>
                   <div class="mini">{{ m.team_a }} vs {{ m.team_b }}</div>
-                  <div class="mini">{{ m.end_date or '-' }}</div>
                 </td>
+                <td>{{ m.end_date or '-' }}</td>
                 <td>{{ m.api_event_type or m.type }}</td>
                 <td>{{ m.type }}</td>
                 <td>
