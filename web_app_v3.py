@@ -23,6 +23,7 @@ from flask import Flask, jsonify, redirect, render_template, request, session, u
 from werkzeug.security import check_password_hash
 
 from db_v3 import get_db_v3
+from config import ONE_V_ONE_KEYWORDS, TEAM_KEYWORDS
 from gamma_client import (
     extract_outcome_prices_from_event,
     extract_token_ids_from_event,
@@ -195,7 +196,7 @@ def _classify_event_type_with_fallback(raw_event: Dict[str, Any]) -> str:
         "badminton",
         "table tennis",
         "wtt",
-    ]
+    ] + [str(k).lower() for k in ONE_V_ONE_KEYWORDS]
     team_indicators = [
         "cricket",
         "t20",
@@ -218,7 +219,7 @@ def _classify_event_type_with_fallback(raw_event: Dict[str, Any]) -> str:
         "serie a",
         "serie b",
         "nfl",
-    ]
+    ] + [str(k).lower() for k in TEAM_KEYWORDS]
 
     if any(ind in combined for ind in one_v_one_indicators):
         return "1v1"

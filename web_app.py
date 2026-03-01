@@ -251,12 +251,98 @@ def _infer_api_event_type(raw_event: Dict[str, Any], structured: Dict[str, Any],
         return "boxing"
     if any(k in text for k in ("tennis", "atp", "wta", "grand slam")):
         return "tennis"
-    if any(k in text for k in ("cricket", "t20", "odi", "ipl")):
+    if any(k in text for k in ("cricket", "t20", "odi", "ipl", "csa-t20", "crint", "cricbbl")):
         return "cricket"
-    if any(k in text for k in ("nba", "wnba", "ncaab", "ncaawb", "basketball")):
+    if any(
+        k in text
+        for k in (
+            "nba",
+            "wnba",
+            "ncaab",
+            "ncaawb",
+            "basketball",
+            "cbb",
+            "bknbl",
+            "bkfr1",
+            "euroleague",
+            "basketball-champions-league",
+            "bkcl",
+            "bkligend",
+            "basketball-series-a",
+            "bkseriea",
+            "bkcba",
+            "bkkbl",
+        )
+    ):
         return "basketball"
     # All major team football/soccer leagues should map to football.
-    if any(k in text for k in ("football", "soccer", "epl", "la liga", "serie a", "bundesliga", "nfl")):
+    if any(
+        k in text
+        for k in (
+            "football",
+            "soccer",
+            "epl",
+            "la liga",
+            "laliga",
+            "serie a",
+            "bundesliga",
+            "nfl",
+            "mls",
+            "ucl",
+            "uel",
+            "uwcl",
+            "fa-cup",
+            "fifa-friendlies",
+            "concacaf",
+            "conmebol",
+            "caf",
+            "dfb",
+            "csl",
+            "elc",
+            "es2",
+            "fr2",
+            "bl2",
+            "ligue-1",
+            "arg",
+            "por",
+            "tur",
+            "kor",
+            "mex",
+            "rus",
+            "nor",
+            "den",
+            "ere",
+            "spl",
+            "ssc",
+            "ukr1",
+            "cze1",
+            "egy1",
+            "rou1",
+            "mar1",
+            "sud",
+            "ucol",
+            "itc",
+            "itsb",
+            "lib",
+            "scop",
+            "sea",
+            "aus",
+            "chi1",
+            "col1",
+            "cde",
+            "bra",
+            "per1",
+            "isp",
+            "acn",
+            "wbc",
+            "rugby",
+            "rusrp",
+            "ruprem",
+            "rusixnat",
+            "rutopft",
+            "ruurc",
+        )
+    ):
         return "football"
 
     # Safe defaults by pipeline type.
