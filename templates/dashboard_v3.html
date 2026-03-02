@@ -781,6 +781,7 @@
             <th>Type</th>
             <th>Candidates</th>
             <th>Predicted</th>
+                <th>Historical (Gemini)</th>
                 <th>Gap</th>
                 <th>Odds At Prediction</th>
                 <th>Expected</th>
@@ -811,6 +812,22 @@
                   </div>
                 </td>
                 <td>{{ m.predicted_winner }} ({{ "%.2f"|format(m.predicted_prob) }}%)</td>
+                <td>
+                  {% if m.historical_team_a_win_pct is not none and m.historical_team_b_win_pct is not none %}
+                  <div class="candidate-line">
+                    {{ m.historical_team_a_name or m.team_a }}: {{ "%.2f"|format(m.historical_team_a_win_pct) }}%
+                  </div>
+                  <div class="candidate-line">
+                    {{ m.historical_team_b_name or m.team_b }}: {{ "%.2f"|format(m.historical_team_b_win_pct) }}%
+                  </div>
+                  <div class="mini">Winner: {{ m.historical_predicted_winner or '-' }}</div>
+                  {% if m.historical_confidence %}
+                  <div class="mini">Confidence: {{ m.historical_confidence }}</div>
+                  {% endif %}
+                  {% else %}
+                  -
+                  {% endif %}
+                </td>
                 <td>{{ "%.2f"|format(m.prediction_gap) }}</td>
                 <td>
                   {% if m.predicted_market_odds is not none %}
@@ -1064,6 +1081,19 @@
             <p class="kv"><b>PersonA:</b> {{ prediction_view.prediction_result.PersonA.Name }} ({{ prediction_view.prediction_result.PersonA.WinPercentage }}%)</p>
             <p class="kv"><b>PersonB:</b> {{ prediction_view.prediction_result.PersonB.Name }} ({{ prediction_view.prediction_result.PersonB.WinPercentage }}%)</p>
             <p class="kv"><b>Edge case:</b> {{ prediction_view.edge_case.risk_level if prediction_view.edge_case else 'None' }}</p>
+          </div>
+          <div class="card">
+            <h3>Historical (Gemini)</h3>
+            {% set hp = prediction_view.historical_prediction %}
+            {% if hp and hp.team_a_win_pct is not none and hp.team_b_win_pct is not none %}
+            <p class="kv"><b>{{ hp.team_a_name or 'Team A' }}:</b> {{ "%.2f"|format(hp.team_a_win_pct) }}%</p>
+            <p class="kv"><b>{{ hp.team_b_name or 'Team B' }}:</b> {{ "%.2f"|format(hp.team_b_win_pct) }}%</p>
+            <p class="kv"><b>Predicted winner:</b> {{ hp.predicted_winner or '-' }}</p>
+            <p class="kv"><b>Confidence:</b> {{ hp.confidence or '-' }}</p>
+            <p class="kv"><b>Summary:</b> {{ hp.reasoning_summary or '-' }}</p>
+            {% else %}
+            <p class="kv">No historical Gemini score available.</p>
+            {% endif %}
           </div>
         </div>
 

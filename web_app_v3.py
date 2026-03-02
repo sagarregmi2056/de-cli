@@ -29,7 +29,12 @@ from gamma_client import (
     extract_token_ids_from_event,
     get_markets,
 )
-from gemini_clients import OneVsOneGeminiClient, TeamsGeminiClient, EdgeCaseGeminiClient
+from gemini_clients import (
+    OneVsOneGeminiClient,
+    TeamsGeminiClient,
+    EdgeCaseGeminiClient,
+    HistoricalPredictionGeminiClient,
+)
 from geo_enricher import enrich_structured_event
 from market_processor import _build_prediction_payload
 from markets_scanner import classify_event_type
@@ -96,6 +101,7 @@ AUTH_USERS = _load_auth_users()
 WEB_APP_V3_GEMINI_USE_SEARCH = _strtobool(os.getenv("WEB_APP_V3_GEMINI_USE_SEARCH"), default=True)
 WEB_APP_V3_GEMINI_MAX_RETRIES = max(1, min(3, _env_int("WEB_APP_V3_GEMINI_MAX_RETRIES", 3)))
 WEB_APP_V3_EDGE_CASE_ENABLED = _strtobool(os.getenv("WEB_APP_V3_EDGE_CASE_ENABLED"), default=False)
+WEB_APP_V3_HISTORICAL_ENABLED = _strtobool(os.getenv("WEB_APP_V3_HISTORICAL_ENABLED"), default=True)
 
 secret_key = os.getenv("WEB_APP_V3_SECRET_KEY")
 if not secret_key:
@@ -120,7 +126,12 @@ if AUTH_ENABLED and not AUTH_USERS:
     )
 
 
-def _get_clients() -> Tuple[OneVsOneGeminiClient, TeamsGeminiClient, EdgeCaseGeminiClient]:
+def _get_clients() -> Tuple[
+    OneVsOneGeminiClient,
+    TeamsGeminiClient,
+    EdgeCaseGeminiClient,
+    HistoricalPredictionGeminiClient,
+]:
     if not _clients:
         _clients["one_v_one"] = OneVsOneGeminiClient(
             use_search=WEB_APP_V3_GEMINI_USE_SEARCH,
@@ -134,7 +145,11 @@ def _get_clients() -> Tuple[OneVsOneGeminiClient, TeamsGeminiClient, EdgeCaseGem
             use_search=WEB_APP_V3_GEMINI_USE_SEARCH,
             max_retries=WEB_APP_V3_GEMINI_MAX_RETRIES,
         )
-    return _clients["one_v_one"], _clients["teams"], _clients["edge_case"]
+        _clients["historical"] = HistoricalPredictionGeminiClient(
+            use_search=WEB_APP_V3_GEMINI_USE_SEARCH,
+            max_retries=WEB_APP_V3_GEMINI_MAX_RETRIES,
+        )
+    return _clients["one_v_one"], _clients["teams"], _clients["edge_case"], _clients["historical"]
 
 
 def _parse_int(raw: Any, default: int, min_value: int, max_value: int) -> int:
@@ -170,6 +185,111 @@ def _as_list(value: Any) -> List[Any]:
         except Exception:
             return []
     return []
+
+
+def _clamp_pct(value: Optional[float]) -> Optional[float]:
+    if value is None:
+        return None
+    return max(0.0, min(100.0, float(value)))
+
+
+def _extract_team_pair_from_structured(structured: Dict[str, Any]) -> Tuple[str, str]:
+    candidates = structured.get("candidates")
+    if not isinstance(candidates, list):
+        return "", ""
+
+    names: List[str] = []
+    for c in candidates:
+        if not isinstance(c, dict):
+            continue
+        name = str(c.get("team_name") or c.get("name") or "").strip()
+        if name:
+            names.append(name)
+    if len(names) >= 2:
+        return names[0], names[1]
+    return "", ""
+
+
+def _build_historical_context(
+    raw_event: Dict[str, Any],
+    structured: Dict[str, Any],
+    prediction_result: Dict[str, Any],
+) -> str:
+    context = {
+        "raw_event": {
+            "id": raw_event.get("id"),
+            "slug": raw_event.get("slug"),
+            "title": raw_event.get("title"),
+            "description": raw_event.get("description"),
+            "sport": raw_event.get("sport") or raw_event.get("category"),
+            "startDate": raw_event.get("startDate") or raw_event.get("start_date"),
+            "endDate": raw_event.get("endDate") or raw_event.get("end_date"),
+        },
+        "structured_event": structured,
+        "api_prediction": prediction_result,
+    }
+    return json.dumps(context, ensure_ascii=True)
+
+
+def _normalize_historical_prediction(
+    raw: Any,
+    fallback_a: str,
+    fallback_b: str,
+) -> Dict[str, Any]:
+    if not isinstance(raw, dict):
+        return {}
+
+    team_a_name = str(raw.get("team_a_name") or fallback_a or "Team A").strip()
+    team_b_name = str(raw.get("team_b_name") or fallback_b or "Team B").strip()
+
+    team_a_pct = _clamp_pct(_safe_float(raw.get("team_a_win_pct")))
+    team_b_pct = _clamp_pct(_safe_float(raw.get("team_b_win_pct")))
+
+    if team_a_pct is None and team_b_pct is None:
+        return {}
+    if team_a_pct is None and team_b_pct is not None:
+        team_a_pct = _clamp_pct(100.0 - team_b_pct)
+    if team_b_pct is None and team_a_pct is not None:
+        team_b_pct = _clamp_pct(100.0 - team_a_pct)
+    if team_a_pct is None or team_b_pct is None:
+        return {}
+
+    total = team_a_pct + team_b_pct
+    if total <= 0:
+        return {}
+    team_a_pct = round((team_a_pct / total) * 100.0, 2)
+    team_b_pct = round(100.0 - team_a_pct, 2)
+
+    predicted_winner = str(raw.get("predicted_winner") or "").strip()
+    if not predicted_winner:
+        predicted_winner = team_a_name if team_a_pct >= team_b_pct else team_b_name
+
+    confidence = str(raw.get("confidence") or "Medium").strip() or "Medium"
+    reasoning_summary = str(raw.get("reasoning_summary") or "").strip()
+
+    historical_factors = raw.get("historical_factors")
+    if not isinstance(historical_factors, list):
+        historical_factors = []
+
+    sources = raw.get("sources")
+    if not isinstance(sources, list):
+        sources = []
+
+    insufficient_data = bool(raw.get("insufficient_data", False))
+
+    return {
+        "team_a_name": team_a_name,
+        "team_b_name": team_b_name,
+        "team_a_win_pct": team_a_pct,
+        "team_b_win_pct": team_b_pct,
+        "predicted_winner": predicted_winner,
+        "confidence": confidence,
+        "reasoning_summary": reasoning_summary,
+        "historical_factors": historical_factors,
+        "sources": sources,
+        "insufficient_data": insufficient_data,
+        "generated_at": dt.datetime.utcnow(),
+    }
 
 
 def _classify_event_type_with_fallback(raw_event: Dict[str, Any]) -> str:
@@ -566,6 +686,9 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
     predicted_market_odds = _find_price_for_outcome(outcome_prices, expected_outcome)
 
     investment = doc.get("investment_result") or {}
+    historical_prediction = doc.get("historical_prediction") or {}
+    historical_team_a_pct = _safe_float(historical_prediction.get("team_a_win_pct"))
+    historical_team_b_pct = _safe_float(historical_prediction.get("team_b_win_pct"))
 
     return {
         "id": str(doc.get("_id")),
@@ -593,6 +716,12 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         "candidate_a_prob": predicted.get("person_a_prob"),
         "candidate_b_name": predicted.get("person_b_name"),
         "candidate_b_prob": predicted.get("person_b_prob"),
+        "historical_team_a_name": historical_prediction.get("team_a_name"),
+        "historical_team_b_name": historical_prediction.get("team_b_name"),
+        "historical_team_a_win_pct": historical_team_a_pct,
+        "historical_team_b_win_pct": historical_team_b_pct,
+        "historical_predicted_winner": historical_prediction.get("predicted_winner"),
+        "historical_confidence": historical_prediction.get("confidence"),
     }
 
 
@@ -802,7 +931,7 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
 
     market_type = _classify_event_type_with_fallback(raw_event)
 
-    one_v_one_client, teams_client, edge_case_client = _get_clients()
+    one_v_one_client, teams_client, edge_case_client, historical_client = _get_clients()
 
     event_json = json.dumps(raw_event)
     if market_type == "teams":
@@ -836,6 +965,21 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         raise ValueError("Prediction API returned no result.")
 
     predicted = _extract_predicted_winner({"prediction_result": prediction_result})
+    fallback_team_a, fallback_team_b = _extract_team_pair_from_structured(structured)
+
+    historical_prediction: Dict[str, Any] = {}
+    if WEB_APP_V3_HISTORICAL_ENABLED:
+        try:
+            historical_raw = historical_client.generate_text(
+                _build_historical_context(raw_event, structured, prediction_result)
+            )
+            historical_prediction = _normalize_historical_prediction(
+                historical_raw,
+                fallback_a=fallback_team_a,
+                fallback_b=fallback_team_b,
+            )
+        except Exception as e:
+            print(f"[HISTORICAL] Warning: failed to generate historical prediction: {e}")
 
     db = get_db_v3()
     coll = db.markets
@@ -874,6 +1018,7 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         "edge_case_risk_level": risk_level,
         "prediction_payload": payload,
         "prediction_result": prediction_result,
+        "historical_prediction": historical_prediction,
         "token_ids": token_ids,
         "outcome_prices": outcome_prices,
         "api_event_type": inferred_event_type,
@@ -884,6 +1029,9 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
             "prediction_gap": predicted.get("gap"),
             "expected_outcome": expected_outcome,
             "predicted_market_odds": predicted_market_odds,
+            "historical_predicted_winner": historical_prediction.get("predicted_winner"),
+            "historical_team_a_win_pct": historical_prediction.get("team_a_win_pct"),
+            "historical_team_b_win_pct": historical_prediction.get("team_b_win_pct"),
             "created_via": "v3_predict_tab",
         },
         "status": "predicted",
@@ -950,6 +1098,8 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         "slug": slug_from_event,
         "prediction_result": prediction_result,
         "predicted": predicted,
+        "prediction_meta": set_doc.get("prediction_meta"),
+        "historical_prediction": historical_prediction,
         "edge_case": edge_case,
         "saved_id": str(saved_id) if saved_id else None,
         "expected_outcome": expected_outcome,
