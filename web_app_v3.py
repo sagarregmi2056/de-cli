@@ -213,7 +213,6 @@ def _extract_team_pair_from_structured(structured: Dict[str, Any]) -> Tuple[str,
 def _build_historical_context(
     raw_event: Dict[str, Any],
     structured: Dict[str, Any],
-    prediction_result: Dict[str, Any],
 ) -> str:
     context = {
         "raw_event": {
@@ -226,7 +225,6 @@ def _build_historical_context(
             "endDate": raw_event.get("endDate") or raw_event.get("end_date"),
         },
         "structured_event": structured,
-        "api_prediction": prediction_result,
     }
     return json.dumps(context, ensure_ascii=True)
 
@@ -971,7 +969,7 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
     if WEB_APP_V3_HISTORICAL_ENABLED:
         try:
             historical_raw = historical_client.generate_text(
-                _build_historical_context(raw_event, structured, prediction_result)
+                _build_historical_context(raw_event, structured)
             )
             historical_prediction = _normalize_historical_prediction(
                 historical_raw,

@@ -278,6 +278,8 @@ class HistoricalPredictionGeminiClient(BaseGeminiClient):
         2. Prefer recent matches and current roster context over old records.
         3. Do not fabricate stats or sources. If evidence is weak, lower confidence and set insufficient_data=true.
         4. team_a_win_pct + team_b_win_pct must equal 100.
+        5. Never copy or anchor to provided prediction percentages or market-implied odds.
+        6. If you detect only market-pricing style evidence and no independent historical evidence, set insufficient_data=true and confidence=Low.
 
         Return ONLY valid JSON with this exact structure:
         {
