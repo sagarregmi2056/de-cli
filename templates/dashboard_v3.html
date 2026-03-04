@@ -38,8 +38,8 @@
       }
 
       .shell {
-        width: min(1240px, 95%);
-        margin: 1.4rem auto 2rem;
+        width: min(1960px, 99vw);
+        margin: 0.7rem auto 1rem;
       }
 
       .hero {
@@ -188,6 +188,12 @@
         font-size: 0.87rem;
       }
 
+      .scope-note {
+        margin-top: 0.55rem;
+        color: #93c5fd;
+        font-size: 0.82rem;
+      }
+
       .board {
         margin-top: 0.95rem;
         border: 1px solid rgba(148, 163, 184, 0.3);
@@ -278,10 +284,22 @@
         overflow-x: auto;
       }
 
+      .markets-table-wrap {
+        max-height: calc(100vh - 245px);
+        overflow: auto;
+      }
+
+      .markets-table-wrap thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        background: rgba(2, 6, 23, 0.98);
+      }
+
       table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 950px;
+        min-width: 1500px;
       }
 
       thead {
@@ -300,6 +318,62 @@
       .candidate-line {
         font-size: 0.78rem;
         color: #cbd5f5;
+      }
+
+      .pred-stack {
+        display: grid;
+        gap: 0.3rem;
+      }
+
+      .pred-row {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 0.45rem;
+        align-items: center;
+        border-radius: 0.5rem;
+        padding: 0.28rem 0.4rem;
+        font-size: 0.78rem;
+      }
+
+      .pred-row .pred-label {
+        font-size: 0.67rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 700;
+      }
+
+      .pred-main {
+        display: grid;
+        gap: 0.08rem;
+      }
+
+      .pred-candidate {
+        font-size: 0.66rem;
+        color: #cbd5f5;
+      }
+
+      .pred-team {
+        font-size: 0.84rem;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .pred-row.win {
+        color: #86efac;
+        background: rgba(22, 163, 74, 0.18);
+        border: 1px solid rgba(34, 197, 94, 0.35);
+      }
+
+      .pred-row.lose {
+        color: #fda4af;
+        background: rgba(185, 28, 28, 0.2);
+        border: 1px solid rgba(244, 63, 94, 0.35);
+      }
+
+      .pred-cell-note {
+        margin-top: 0.28rem;
+        font-size: 0.72rem;
+        color: #94a3b8;
       }
 
       th {
@@ -641,7 +715,11 @@
 
       @media (max-width: 820px) {
         .shell {
-          width: 95.5%;
+          width: 97.5%;
+        }
+
+        .markets-table-wrap {
+          max-height: none;
         }
       }
     </style>
@@ -649,6 +727,8 @@
   <body>
     <div class="shell">
       <section class="hero">
+        {% set active_month = month_filter if month_filter else '' %}
+        {% set month_query = '&month=' ~ active_month if active_month and active_month != 'all' else '' %}
         <div class="top-row">
           <div>
             <h1>Destiny Engine</h1>
@@ -664,14 +744,20 @@
             </form>
             {% endif %}
             <button class="btn btn-primary" id="resolveBtn">Auto Resolve Now</button>
-            <a class="btn btn-secondary" href="/?auto_resolve=1">Refresh</a>
+            {% if active_tab == 'analytics' %}
+            <a class="btn btn-secondary" href="/analytics?auto_resolve=1{{ month_query }}">Refresh</a>
+            {% elif active_tab == 'predict' %}
+            <a class="btn btn-secondary" href="/predict?auto_resolve=1{{ month_query }}">Refresh</a>
+            {% else %}
+            <a class="btn btn-secondary" href="/?auto_resolve=1{{ month_query }}">Refresh</a>
+            {% endif %}
           </div>
         </div>
 
         <div class="tabs">
-          <a class="tab {{ 'active' if active_tab == 'markets' else '' }}" href="/?auto_resolve=1">Markets</a>
-          <a class="tab {{ 'active' if active_tab == 'analytics' else '' }}" href="/analytics?auto_resolve=1">Analytics</a>
-          <a class="tab {{ 'active' if active_tab == 'predict' else '' }}" href="/predict">Predict URL</a>
+          <a class="tab {{ 'active' if active_tab == 'markets' else '' }}" href="/?auto_resolve=1{{ month_query }}">Markets</a>
+          <a class="tab {{ 'active' if active_tab == 'analytics' else '' }}" href="/analytics?auto_resolve=1{{ month_query }}">Analytics</a>
+          <a class="tab {{ 'active' if active_tab == 'predict' else '' }}" href="/predict?auto_resolve=1{{ month_query }}">Predict URL</a>
         </div>
 
         <div class="stats">
@@ -710,6 +796,13 @@
             </div>
           </div>
         </div>
+        <div class="scope-note">
+          {% if active_month and active_month != 'all' %}
+          Market month {{ active_month }}: Total {{ summary.total }}, Resolved {{ summary.resolved }}, Won {{ summary.won }}, Lost {{ summary.lost }}, Pending {{ summary.pending }}, Invested {{ summary.invested }}, Win Rate {% if summary.win_rate is not none %}{{ "%.2f"|format(summary.win_rate) }}%{% else %}-{% endif %}.
+          {% else %}
+          All market months: Total {{ summary.total }}, Resolved {{ summary.resolved }}, Won {{ summary.won }}, Lost {{ summary.lost }}, Pending {{ summary.pending }}, Invested {{ summary.invested }}, Win Rate {% if summary.win_rate is not none %}{{ "%.2f"|format(summary.win_rate) }}%{% else %}-{% endif %}.
+          {% endif %}
+        </div>
 
         {% if resolve_counts %}
         <div class="callout">
@@ -734,7 +827,7 @@
           <h3>Predict a URL</h3>
           <p class="mini">Go to the Predict tab, paste the Polymarket link, and let Destiny Engine capture it.</p>
           <div class="plan-form-inner">
-            <a class="btn btn-primary" href="/predict">Go Predict</a>
+            <a class="btn btn-primary" href="/predict{% if month_filter and month_filter != 'all' %}?month={{ month_filter }}{% endif %}">Go Predict</a>
           </div>
         </div>
       </section>
@@ -759,6 +852,15 @@
             </select>
           </div>
           <div class="field">
+            <label for="month">Market Month</label>
+            <select id="month" name="month">
+              <option value="all" {{ 'selected' if month_filter == 'all' else '' }}>All</option>
+              {% for month in month_options %}
+              <option value="{{ month }}" {{ 'selected' if month_filter == month else '' }}>{{ month }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
             <label for="limit">Limit</label>
             <input id="limit" type="text" name="limit" value="{{ limit }}" />
           </div>
@@ -771,7 +873,7 @@
         {% if not markets %}
         <div class="empty">No markets matched your search/filter.</div>
         {% else %}
-        <div class="table-wrap">
+        <div class="table-wrap markets-table-wrap">
           <table>
             <thead>
               <tr>
@@ -779,7 +881,7 @@
             <th>Date</th>
             <th>Event Type</th>
             <th>Type</th>
-            <th>Candidates</th>
+            <th>Candidates (API)</th>
             <th>Predicted</th>
                 <th>Historical (Gemini)</th>
                 <th>Gap</th>
@@ -802,27 +904,71 @@
                 <td>{{ m.api_event_type or m.type }}</td>
                 <td>{{ m.type }}</td>
                 <td>
-                  <div class="candidate-line">
-                    {{ m.candidate_a_name or 'Candidate A' }}
-                    ({{ "%.2f"|format(m.candidate_a_prob or 0) }}%)
-                  </div>
-                  <div class="candidate-line">
-                    {{ m.candidate_b_name or 'Candidate B' }}
-                    ({{ "%.2f"|format(m.candidate_b_prob or 0) }}%)
+                  {% set api_a_name = (m.candidate_a_name or (m.team_a if m.type == 'teams' else 'Candidate A')) %}
+                  {% set api_b_name = (m.candidate_b_name or (m.team_b if m.type == 'teams' else 'Candidate B')) %}
+                  {% set api_a_team = (m.team_a if m.type == 'teams' else '') %}
+                  {% set api_b_team = (m.team_b if m.type == 'teams' else '') %}
+                  {% set api_a_pct = m.candidate_a_prob or 0 %}
+                  {% set api_b_pct = m.candidate_b_prob or 0 %}
+                  {% set api_win_name = api_a_name if api_a_pct >= api_b_pct else api_b_name %}
+                  {% set api_win_team = api_a_team if api_a_pct >= api_b_pct else api_b_team %}
+                  {% set api_win_pct = api_a_pct if api_a_pct >= api_b_pct else api_b_pct %}
+                  {% set api_lose_name = api_b_name if api_a_pct >= api_b_pct else api_a_name %}
+                  {% set api_lose_team = api_b_team if api_a_pct >= api_b_pct else api_a_team %}
+                  {% set api_lose_pct = api_b_pct if api_a_pct >= api_b_pct else api_a_pct %}
+                  <div class="pred-stack">
+                    <div class="pred-row win">
+                      <span class="pred-label">Win</span>
+                      <span class="pred-main">
+                        {% if api_win_team %}
+                        <span class="pred-team">{{ api_win_team }}</span>
+                        <span class="pred-candidate">Candidate: {{ api_win_name }}</span>
+                        {% else %}
+                        <span class="pred-team">{{ api_win_name }}</span>
+                        {% endif %}
+                      </span>
+                      <span>{{ "%.2f"|format(api_win_pct) }}%</span>
+                    </div>
+                    <div class="pred-row lose">
+                      <span class="pred-label">Lose</span>
+                      <span class="pred-main">
+                        {% if api_lose_team %}
+                        <span class="pred-team">{{ api_lose_team }}</span>
+                        <span class="pred-candidate">Candidate: {{ api_lose_name }}</span>
+                        {% else %}
+                        <span class="pred-team">{{ api_lose_name }}</span>
+                        {% endif %}
+                      </span>
+                      <span>{{ "%.2f"|format(api_lose_pct) }}%</span>
+                    </div>
                   </div>
                 </td>
                 <td>{{ m.predicted_winner }} ({{ "%.2f"|format(m.predicted_prob) }}%)</td>
                 <td>
                   {% if m.historical_team_a_win_pct is not none and m.historical_team_b_win_pct is not none %}
-                  <div class="candidate-line">
-                    {{ m.historical_team_a_name or m.team_a }}: {{ "%.2f"|format(m.historical_team_a_win_pct) }}%
+                  {% set h_a_name = m.historical_team_a_name or m.team_a %}
+                  {% set h_b_name = m.historical_team_b_name or m.team_b %}
+                  {% set h_a_pct = m.historical_team_a_win_pct or 0 %}
+                  {% set h_b_pct = m.historical_team_b_win_pct or 0 %}
+                  {% set h_win_name = h_a_name if h_a_pct >= h_b_pct else h_b_name %}
+                  {% set h_win_pct = h_a_pct if h_a_pct >= h_b_pct else h_b_pct %}
+                  {% set h_lose_name = h_b_name if h_a_pct >= h_b_pct else h_a_name %}
+                  {% set h_lose_pct = h_b_pct if h_a_pct >= h_b_pct else h_a_pct %}
+                  <div class="pred-stack">
+                    <div class="pred-row win">
+                      <span class="pred-label">Win</span>
+                      <span>{{ h_win_name }}</span>
+                      <span>{{ "%.2f"|format(h_win_pct) }}%</span>
+                    </div>
+                    <div class="pred-row lose">
+                      <span class="pred-label">Lose</span>
+                      <span>{{ h_lose_name }}</span>
+                      <span>{{ "%.2f"|format(h_lose_pct) }}%</span>
+                    </div>
                   </div>
-                  <div class="candidate-line">
-                    {{ m.historical_team_b_name or m.team_b }}: {{ "%.2f"|format(m.historical_team_b_win_pct) }}%
-                  </div>
-                  <div class="mini">Winner: {{ m.historical_predicted_winner or '-' }}</div>
+                  <div class="pred-cell-note">Winner: {{ m.historical_predicted_winner or '-' }}</div>
                   {% if m.historical_confidence %}
-                  <div class="mini">Confidence: {{ m.historical_confidence }}</div>
+                  <div class="pred-cell-note">Confidence: {{ m.historical_confidence }}</div>
                   {% endif %}
                   {% else %}
                   -
@@ -869,6 +1015,24 @@
 
       {% if active_tab == 'analytics' %}
       <section class="board section-pad">
+        <form method="GET" action="/analytics" class="controls" style="margin-bottom: 0.9rem;">
+          <div class="field">
+            <label for="analytics_month">Market Month</label>
+            <select id="analytics_month" name="month">
+              <option value="all" {{ 'selected' if month_filter == 'all' else '' }}>All</option>
+              {% for month in month_options %}
+              <option value="{{ month }}" {{ 'selected' if month_filter == month else '' }}>{{ month }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="field">
+            <label for="analytics_limit">Limit</label>
+            <input id="analytics_limit" type="text" name="limit" value="{{ limit }}" />
+          </div>
+          <input type="hidden" name="auto_resolve" value="1" />
+          <button class="btn btn-secondary" type="submit">Apply</button>
+        </form>
+
         {% if analytics %}
         <div class="cards">
           <div class="card">
@@ -1019,7 +1183,7 @@
       {% if active_tab == 'predict' %}
       <section class="board section-pad">
         {% if not prediction_view %}
-        <form method="POST" action="/predict" class="controls" id="predictForm">
+        <form method="POST" action="/predict{% if month_filter and month_filter != 'all' %}?month={{ month_filter }}{% endif %}" class="controls" id="predictForm">
           <div class="field" style="flex: 1; min-width: 320px;">
             <label for="url">Polymarket URL</label>
             <input id="url" type="url" name="url" required placeholder="https://polymarket.com/sports/ufc/..." style="width: 100%;" />
@@ -1034,7 +1198,7 @@
         {% else %}
         <div class="callout" style="margin-bottom:0.6rem;">
           Prediction loaded for <strong>{{ prediction_view.prediction_meta.source_url if prediction_view.prediction_meta }}</strong>. 
-          <a class="link" href="/predict">Try another market</a>
+          <a class="link" href="/predict{% if month_filter and month_filter != 'all' %}?month={{ month_filter }}{% endif %}">Try another market</a>
         </div>
         {% endif %}
 
@@ -1192,13 +1356,11 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ limit: 500 }),
             });
-            if (window.location.pathname === "/analytics") {
-              window.location.href = "/analytics?auto_resolve=1";
-            } else if (window.location.pathname === "/predict") {
-              window.location.href = "/predict?auto_resolve=1";
-            } else {
-              window.location.href = "/?auto_resolve=1";
-            }
+            const params = new URLSearchParams(window.location.search || "");
+            params.set("auto_resolve", "1");
+            const query = params.toString();
+            const target = `${window.location.pathname}${query ? `?${query}` : ""}`;
+            window.location.href = target;
           } catch (e) {
             button.disabled = false;
             button.textContent = original;

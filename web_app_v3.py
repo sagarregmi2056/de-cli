@@ -15,6 +15,7 @@ import datetime as dt
 import hmac
 import json
 import os
+import re
 import secrets
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -720,6 +721,8 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         "historical_team_b_win_pct": historical_team_b_pct,
         "historical_predicted_winner": historical_prediction.get("predicted_winner"),
         "historical_confidence": historical_prediction.get("confidence"),
+        "created_at": doc.get("created_at"),
+        "updated_at": doc.get("updated_at"),
     }
 
 
@@ -770,6 +773,60 @@ def _market_matches_search(market: Dict[str, Any], q: str) -> bool:
         ]
     )
     return qn in _norm(haystack)
+
+
+def _month_key_from_value(value: Any) -> str:
+    if isinstance(value, dt.datetime):
+        return value.strftime("%Y-%m")
+    if isinstance(value, dt.date):
+        return value.strftime("%Y-%m")
+
+    text = str(value or "").strip()
+    if not text:
+        return ""
+
+    try:
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+        return parsed.strftime("%Y-%m")
+    except Exception:
+        pass
+
+    match = re.match(r"^(\d{4}-\d{2})", text)
+    return match.group(1) if match else ""
+
+
+def _market_month_key(market: Dict[str, Any]) -> str:
+    # Month filter follows the Date column (market end_date).
+    # Fallback to created_at only for rows where end_date is missing.
+    end_month = _month_key_from_value(market.get("end_date"))
+    if end_month:
+        return end_month
+    return _month_key_from_value(market.get("created_at"))
+
+
+def _collect_month_options(markets: List[Dict[str, Any]]) -> List[str]:
+    months = {_market_month_key(m) for m in markets}
+    clean = [m for m in months if m]
+    return sorted(clean, reverse=True)
+
+
+def _resolve_month_filter(requested_month: str, month_options: List[str]) -> str:
+    requested = str(requested_month or "").strip()
+    current_month = dt.datetime.now().strftime("%Y-%m")
+
+    if requested == "all":
+        return "all"
+    if re.match(r"^\d{4}-\d{2}$", requested):
+        return requested
+    if month_options:
+        return current_month if current_month in month_options else month_options[0]
+    return current_month
+
+
+def _market_matches_month(market: Dict[str, Any], month_filter: str) -> bool:
+    if not month_filter or month_filter == "all":
+        return True
+    return _market_month_key(market) == month_filter
 
 
 def _odds_bucket(value: Optional[float]) -> str:
@@ -1181,6 +1238,8 @@ def _render_dashboard(
     limit: int,
     result_filter: str = "all",
     search: str = "",
+    month_filter: str = "",
+    month_options: Optional[List[str]] = None,
     analytics: Optional[Dict[str, Any]] = None,
     prediction_view: Optional[Dict[str, Any]] = None,
     prediction_error: Optional[str] = None,
@@ -1195,6 +1254,8 @@ def _render_dashboard(
         limit=limit,
         result_filter=result_filter,
         search=search,
+        month_filter=month_filter,
+        month_options=month_options or [],
         analytics=analytics,
         prediction_view=prediction_view,
         prediction_error=prediction_error,
@@ -1210,14 +1271,20 @@ def markets_tab():
     result_filter = request.args.get("result", "all")
     search = request.args.get("q", "").strip()
     limit = _parse_int(request.args.get("limit"), default=300, min_value=1, max_value=1000)
+    requested_month = (request.args.get("month") or "").strip()
 
     _, all_markets, summary, resolve_counts = _load_market_data(limit=limit, auto_resolve=auto_resolve)
+    month_options = _collect_month_options(all_markets)
+    month_filter = _resolve_month_filter(requested_month, month_options)
 
     markets = all_markets
+    if month_filter != "all":
+        markets = [m for m in markets if _market_matches_month(m, month_filter)]
     if result_filter != "all":
         markets = [m for m in markets if m.get("prediction_status") == result_filter]
     if search:
         markets = [m for m in markets if _market_matches_search(m, search)]
+    summary = _build_summary(markets)
 
     return _render_dashboard(
         active_tab="markets",
@@ -1227,6 +1294,8 @@ def markets_tab():
         limit=limit,
         result_filter=result_filter,
         search=search,
+        month_filter=month_filter,
+        month_options=month_options,
     )
 
 
@@ -1234,8 +1303,17 @@ def markets_tab():
 def analytics_tab():
     auto_resolve = request.args.get("auto_resolve", "1") == "1"
     limit = _parse_int(request.args.get("limit"), default=500, min_value=1, max_value=1000)
+    requested_month = (request.args.get("month") or "").strip()
 
-    _, markets, summary, resolve_counts = _load_market_data(limit=limit, auto_resolve=auto_resolve)
+    _, all_markets, _, resolve_counts = _load_market_data(limit=limit, auto_resolve=auto_resolve)
+    month_options = _collect_month_options(all_markets)
+    month_filter = _resolve_month_filter(requested_month, month_options)
+
+    markets = all_markets
+    if month_filter != "all":
+        markets = [m for m in markets if _market_matches_month(m, month_filter)]
+
+    summary = _build_summary(markets)
     analytics = _build_analytics(markets)
 
     return _render_dashboard(
@@ -1244,6 +1322,8 @@ def analytics_tab():
         summary=summary,
         resolve_counts=resolve_counts,
         limit=limit,
+        month_filter=month_filter,
+        month_options=month_options,
         analytics=analytics,
     )
 
@@ -1252,6 +1332,7 @@ def analytics_tab():
 def predict_tab():
     auto_resolve = request.args.get("auto_resolve", "0") == "1"
     limit = _parse_int(request.args.get("limit"), default=300, min_value=1, max_value=1000)
+    requested_month = (request.args.get("month") or "").strip()
 
     prediction_view = None
     prediction_error = None
@@ -1266,7 +1347,14 @@ def predict_tab():
             except Exception as e:
                 prediction_error = str(e)
 
-    _, markets, summary, resolve_counts = _load_market_data(limit=limit, auto_resolve=auto_resolve)
+    _, all_markets, _, resolve_counts = _load_market_data(limit=limit, auto_resolve=auto_resolve)
+    month_options = _collect_month_options(all_markets)
+    month_filter = _resolve_month_filter(requested_month, month_options)
+
+    markets = all_markets
+    if month_filter != "all":
+        markets = [m for m in markets if _market_matches_month(m, month_filter)]
+    summary = _build_summary(markets)
 
     return _render_dashboard(
         active_tab="predict",
@@ -1274,6 +1362,8 @@ def predict_tab():
         summary=summary,
         resolve_counts=resolve_counts,
         limit=limit,
+        month_filter=month_filter,
+        month_options=month_options,
         prediction_view=prediction_view,
         prediction_error=prediction_error,
     )
