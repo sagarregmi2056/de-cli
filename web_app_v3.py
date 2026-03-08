@@ -689,6 +689,11 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
     historical_team_a_pct = _safe_float(historical_prediction.get("team_a_win_pct"))
     historical_team_b_pct = _safe_float(historical_prediction.get("team_b_win_pct"))
 
+    created_at = doc.get("created_at")
+    if not created_at:
+        obj_id = doc.get("_id")
+        created_at = getattr(obj_id, "generation_time", None)
+
     return {
         "id": str(doc.get("_id")),
         "source_event_id": str(doc.get("source_event_id") or raw_event.get("id") or ""),
@@ -721,7 +726,7 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         "historical_team_b_win_pct": historical_team_b_pct,
         "historical_predicted_winner": historical_prediction.get("predicted_winner"),
         "historical_confidence": historical_prediction.get("confidence"),
-        "created_at": doc.get("created_at"),
+        "created_at": created_at,
         "updated_at": doc.get("updated_at"),
     }
 
@@ -795,13 +800,38 @@ def _month_key_from_value(value: Any) -> str:
     return match.group(1) if match else ""
 
 
+def _date_from_value(value: Any) -> Optional[dt.date]:
+    if isinstance(value, dt.datetime):
+        return value.date()
+    if isinstance(value, dt.date):
+        return value
+
+    text = str(value or "").strip()
+    if not text:
+        return None
+
+    try:
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+        return parsed.date()
+    except Exception:
+        pass
+
+    try:
+        return dt.date.fromisoformat(text[:10])
+    except Exception:
+        return None
+
+
 def _market_month_key(market: Dict[str, Any]) -> str:
-    # Month filter follows the Date column (market end_date).
-    # Fallback to created_at only for rows where end_date is missing.
-    end_month = _month_key_from_value(market.get("end_date"))
-    if end_month:
-        return end_month
-    return _month_key_from_value(market.get("created_at"))
+    # Month filter follows prediction creation date only.
+    created_month = _month_key_from_value(market.get("created_at"))
+    return created_month or ""
+
+
+def _market_date_key(market: Dict[str, Any]) -> Optional[dt.date]:
+    # Date key follows prediction creation date only.
+    created_date = _date_from_value(market.get("created_at"))
+    return created_date
 
 
 def _collect_month_options(markets: List[Dict[str, Any]]) -> List[str]:
@@ -826,7 +856,40 @@ def _resolve_month_filter(requested_month: str, month_options: List[str]) -> str
 def _market_matches_month(market: Dict[str, Any], month_filter: str) -> bool:
     if not month_filter or month_filter == "all":
         return True
-    return _market_month_key(market) == month_filter
+
+    if _market_month_key(market) != month_filter:
+        return False
+
+    current_month = dt.date.today().strftime("%Y-%m")
+    if month_filter != current_month:
+        return True
+
+    # For current month views, show progress from today onward.
+    market_date = _market_date_key(market)
+    if not market_date:
+        return False
+    return market_date >= dt.date.today()
+
+
+def _created_datetime_key(market: Dict[str, Any]) -> dt.datetime:
+    value = market.get("created_at")
+    if isinstance(value, dt.datetime):
+        return value
+    if isinstance(value, dt.date):
+        return dt.datetime.combine(value, dt.time.min)
+
+    text = str(value or "").strip()
+    if text:
+        try:
+            return dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except Exception:
+            pass
+
+    return dt.datetime.min
+
+
+def _sort_markets_newest(markets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return sorted(markets, key=_created_datetime_key, reverse=True)
 
 
 def _odds_bucket(value: Optional[float]) -> str:
@@ -963,11 +1026,11 @@ def _load_market_data(limit: int, auto_resolve: bool) -> Tuple[List[Dict[str, An
     coll = get_db_v3().markets
     docs = list(
         coll.find({"prediction_result": {"$exists": True}})
-        .sort("end_date", 1)
+        .sort([("created_at", -1), ("_id", -1)])
         .limit(max(1, min(limit, 1000)))
     )
 
-    markets = [_serialize_market(doc) for doc in docs]
+    markets = _sort_markets_newest([_serialize_market(doc) for doc in docs])
     summary = _build_summary(markets)
     return docs, markets, summary, resolve_counts
 
@@ -1244,7 +1307,7 @@ def _render_dashboard(
     prediction_view: Optional[Dict[str, Any]] = None,
     prediction_error: Optional[str] = None,
 ) -> Any:
-    recent = sorted(markets, key=lambda m: str(m.get("end_date") or ""), reverse=True)[:25]
+    recent = _sort_markets_newest(markets)[:25]
     return render_template(
         "dashboard_v3.html",
         active_tab=active_tab,
@@ -1284,6 +1347,7 @@ def markets_tab():
         markets = [m for m in markets if m.get("prediction_status") == result_filter]
     if search:
         markets = [m for m in markets if _market_matches_search(m, search)]
+    markets = _sort_markets_newest(markets)
     summary = _build_summary(markets)
 
     return _render_dashboard(
@@ -1312,6 +1376,7 @@ def analytics_tab():
     markets = all_markets
     if month_filter != "all":
         markets = [m for m in markets if _market_matches_month(m, month_filter)]
+    markets = _sort_markets_newest(markets)
 
     summary = _build_summary(markets)
     analytics = _build_analytics(markets)
@@ -1354,6 +1419,7 @@ def predict_tab():
     markets = all_markets
     if month_filter != "all":
         markets = [m for m in markets if _market_matches_month(m, month_filter)]
+    markets = _sort_markets_newest(markets)
     summary = _build_summary(markets)
 
     return _render_dashboard(

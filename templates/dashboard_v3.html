@@ -359,15 +359,20 @@
       }
 
       .pred-row.win {
-        color: #86efac;
-        background: rgba(22, 163, 74, 0.18);
-        border: 1px solid rgba(34, 197, 94, 0.35);
+        color: #ffffff;
+        background: #03641b;
+        border: 1px solid #06c106;
       }
 
       .pred-row.lose {
-        color: #fda4af;
-        background: rgba(185, 28, 28, 0.2);
-        border: 1px solid rgba(244, 63, 94, 0.35);
+        color: #ffffff;
+        background: #ff0000;
+        border: 1px solid #ff0000;
+      }
+
+      .pred-row.win .pred-candidate,
+      .pred-row.lose .pred-candidate {
+        color: #ffffff;
       }
 
       .pred-cell-note {
@@ -798,9 +803,9 @@
         </div>
         <div class="scope-note">
           {% if active_month and active_month != 'all' %}
-          Market month {{ active_month }}: Total {{ summary.total }}, Resolved {{ summary.resolved }}, Won {{ summary.won }}, Lost {{ summary.lost }}, Pending {{ summary.pending }}, Invested {{ summary.invested }}, Win Rate {% if summary.win_rate is not none %}{{ "%.2f"|format(summary.win_rate) }}%{% else %}-{% endif %}.
+          Prediction month {{ active_month }}: Total {{ summary.total }}, Resolved {{ summary.resolved }}, Won {{ summary.won }}, Lost {{ summary.lost }}, Pending {{ summary.pending }}, Invested {{ summary.invested }}, Win Rate {% if summary.win_rate is not none %}{{ "%.2f"|format(summary.win_rate) }}%{% else %}-{% endif %}.
           {% else %}
-          All market months: Total {{ summary.total }}, Resolved {{ summary.resolved }}, Won {{ summary.won }}, Lost {{ summary.lost }}, Pending {{ summary.pending }}, Invested {{ summary.invested }}, Win Rate {% if summary.win_rate is not none %}{{ "%.2f"|format(summary.win_rate) }}%{% else %}-{% endif %}.
+          All prediction months: Total {{ summary.total }}, Resolved {{ summary.resolved }}, Won {{ summary.won }}, Lost {{ summary.lost }}, Pending {{ summary.pending }}, Invested {{ summary.invested }}, Win Rate {% if summary.win_rate is not none %}{{ "%.2f"|format(summary.win_rate) }}%{% else %}-{% endif %}.
           {% endif %}
         </div>
 
@@ -852,7 +857,7 @@
             </select>
           </div>
           <div class="field">
-            <label for="month">Market Month</label>
+            <label for="month">Prediction Month</label>
             <select id="month" name="month">
               <option value="all" {{ 'selected' if month_filter == 'all' else '' }}>All</option>
               {% for month in month_options %}
@@ -881,15 +886,13 @@
             <th>Date</th>
             <th>Event Type</th>
             <th>Type</th>
-            <th>Candidates (API)</th>
-            <th>Predicted</th>
-                <th>Historical (Gemini)</th>
+            <th>Mero jostish predictions</th>
+                <th>Gemini predictions</th>
                 <th>Gap</th>
                 <th>Odds At Prediction</th>
                 <th>Expected</th>
                 <th>Resolved</th>
                 <th>Result</th>
-                <th>Invested</th>
                 <th>Link</th>
               </tr>
             </thead>
@@ -900,76 +903,59 @@
                   <div class="title">{{ m.title }}</div>
                   <div class="mini">{{ m.team_a }} vs {{ m.team_b }}</div>
                 </td>
-                <td>{{ m.end_date or '-' }}</td>
+                <td>{{ (m.created_at|string)[:10] if m.created_at else '-' }}</td>
                 <td>{{ m.api_event_type or m.type }}</td>
                 <td>{{ m.type }}</td>
                 <td>
                   {% set api_a_name = (m.candidate_a_name or (m.team_a if m.type == 'teams' else 'Candidate A')) %}
                   {% set api_b_name = (m.candidate_b_name or (m.team_b if m.type == 'teams' else 'Candidate B')) %}
-                  {% set api_a_team = (m.team_a if m.type == 'teams' else '') %}
-                  {% set api_b_team = (m.team_b if m.type == 'teams' else '') %}
+                  {% set api_a_team = (m.team_a if m.type == 'teams' else api_a_name) %}
+                  {% set api_b_team = (m.team_b if m.type == 'teams' else api_b_name) %}
                   {% set api_a_pct = m.candidate_a_prob or 0 %}
                   {% set api_b_pct = m.candidate_b_prob or 0 %}
-                  {% set api_win_name = api_a_name if api_a_pct >= api_b_pct else api_b_name %}
-                  {% set api_win_team = api_a_team if api_a_pct >= api_b_pct else api_b_team %}
-                  {% set api_win_pct = api_a_pct if api_a_pct >= api_b_pct else api_b_pct %}
-                  {% set api_lose_name = api_b_name if api_a_pct >= api_b_pct else api_a_name %}
-                  {% set api_lose_team = api_b_team if api_a_pct >= api_b_pct else api_a_team %}
-                  {% set api_lose_pct = api_b_pct if api_a_pct >= api_b_pct else api_a_pct %}
+                  {% set api_a_is_win = api_a_pct >= api_b_pct %}
                   <div class="pred-stack">
-                    <div class="pred-row win">
-                      <span class="pred-label">Win</span>
+                    <div class="pred-row {{ 'win' if api_a_is_win else 'lose' }}">
+                      <span class="pred-label">{{ 'Win' if api_a_is_win else 'Lose' }}</span>
                       <span class="pred-main">
-                        {% if api_win_team %}
-                        <span class="pred-team">{{ api_win_team }}</span>
-                        <span class="pred-candidate">Candidate: {{ api_win_name }}</span>
-                        {% else %}
-                        <span class="pred-team">{{ api_win_name }}</span>
+                        <span class="pred-team">{{ api_a_team }}</span>
+                        {% if m.type == 'teams' %}
+                        <span class="pred-candidate">Candidate: {{ api_a_name }}</span>
                         {% endif %}
                       </span>
-                      <span>{{ "%.2f"|format(api_win_pct) }}%</span>
+                      <span>{{ "%.2f"|format(api_a_pct) }}%</span>
                     </div>
-                    <div class="pred-row lose">
-                      <span class="pred-label">Lose</span>
+                    <div class="pred-row {{ 'lose' if api_a_is_win else 'win' }}">
+                      <span class="pred-label">{{ 'Lose' if api_a_is_win else 'Win' }}</span>
                       <span class="pred-main">
-                        {% if api_lose_team %}
-                        <span class="pred-team">{{ api_lose_team }}</span>
-                        <span class="pred-candidate">Candidate: {{ api_lose_name }}</span>
-                        {% else %}
-                        <span class="pred-team">{{ api_lose_name }}</span>
+                        <span class="pred-team">{{ api_b_team }}</span>
+                        {% if m.type == 'teams' %}
+                        <span class="pred-candidate">Candidate: {{ api_b_name }}</span>
                         {% endif %}
                       </span>
-                      <span>{{ "%.2f"|format(api_lose_pct) }}%</span>
+                      <span>{{ "%.2f"|format(api_b_pct) }}%</span>
                     </div>
                   </div>
                 </td>
-                <td>{{ m.predicted_winner }} ({{ "%.2f"|format(m.predicted_prob) }}%)</td>
                 <td>
                   {% if m.historical_team_a_win_pct is not none and m.historical_team_b_win_pct is not none %}
-                  {% set h_a_name = m.historical_team_a_name or m.team_a %}
-                  {% set h_b_name = m.historical_team_b_name or m.team_b %}
+                  {% set h_a_name = m.team_a or m.historical_team_a_name or 'Team A' %}
+                  {% set h_b_name = m.team_b or m.historical_team_b_name or 'Team B' %}
                   {% set h_a_pct = m.historical_team_a_win_pct or 0 %}
                   {% set h_b_pct = m.historical_team_b_win_pct or 0 %}
-                  {% set h_win_name = h_a_name if h_a_pct >= h_b_pct else h_b_name %}
-                  {% set h_win_pct = h_a_pct if h_a_pct >= h_b_pct else h_b_pct %}
-                  {% set h_lose_name = h_b_name if h_a_pct >= h_b_pct else h_a_name %}
-                  {% set h_lose_pct = h_b_pct if h_a_pct >= h_b_pct else h_a_pct %}
+                  {% set h_a_is_win = h_a_pct >= h_b_pct %}
                   <div class="pred-stack">
-                    <div class="pred-row win">
-                      <span class="pred-label">Win</span>
-                      <span>{{ h_win_name }}</span>
-                      <span>{{ "%.2f"|format(h_win_pct) }}%</span>
+                    <div class="pred-row {{ 'win' if h_a_is_win else 'lose' }}">
+                      <span class="pred-label">{{ 'Win' if h_a_is_win else 'Lose' }}</span>
+                      <span>{{ h_a_name }}</span>
+                      <span>{{ "%.2f"|format(h_a_pct) }}%</span>
                     </div>
-                    <div class="pred-row lose">
-                      <span class="pred-label">Lose</span>
-                      <span>{{ h_lose_name }}</span>
-                      <span>{{ "%.2f"|format(h_lose_pct) }}%</span>
+                    <div class="pred-row {{ 'lose' if h_a_is_win else 'win' }}">
+                      <span class="pred-label">{{ 'Lose' if h_a_is_win else 'Win' }}</span>
+                      <span>{{ h_b_name }}</span>
+                      <span>{{ "%.2f"|format(h_b_pct) }}%</span>
                     </div>
                   </div>
-                  <div class="pred-cell-note">Winner: {{ m.historical_predicted_winner or '-' }}</div>
-                  {% if m.historical_confidence %}
-                  <div class="pred-cell-note">Confidence: {{ m.historical_confidence }}</div>
-                  {% endif %}
                   {% else %}
                   -
                   {% endif %}
@@ -991,13 +977,6 @@
                   </span>
                 </td>
                 <td>
-                  {% if m.is_invested %}
-                  Yes{% if m.investment_amount is not none %} (${{ "%.2f"|format(m.investment_amount) }}){% endif %}
-                  {% else %}
-                  No
-                  {% endif %}
-                </td>
-                <td>
                   {% if m.market_url %}
                   <a class="link" href="{{ m.market_url }}" target="_blank" rel="noopener noreferrer">Open</a>
                   {% else %}
@@ -1017,7 +996,7 @@
       <section class="board section-pad">
         <form method="GET" action="/analytics" class="controls" style="margin-bottom: 0.9rem;">
           <div class="field">
-            <label for="analytics_month">Market Month</label>
+            <label for="analytics_month">Prediction Month</label>
             <select id="analytics_month" name="month">
               <option value="all" {{ 'selected' if month_filter == 'all' else '' }}>All</option>
               {% for month in month_options %}
