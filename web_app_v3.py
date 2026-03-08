@@ -726,6 +726,7 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         "historical_team_b_win_pct": historical_team_b_pct,
         "historical_predicted_winner": historical_prediction.get("predicted_winner"),
         "historical_confidence": historical_prediction.get("confidence"),
+        "prediction_result": doc.get("prediction_result") or {},
         "created_at": created_at,
         "updated_at": doc.get("updated_at"),
     }

@@ -436,13 +436,141 @@
       }
 
       .link {
-        color: #0c4a6e;
+        color: #ffffff;
         text-decoration: none;
         font-weight: 600;
       }
 
       .link:hover {
         text-decoration: underline;
+        color: #e2e8f0;
+      }
+
+      .link-stack {
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .details-btn {
+        border: 1px solid rgba(129, 140, 248, 0.55);
+        border-radius: 0.62rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.95), rgba(59, 130, 246, 0.95));
+        color: #ffffff;
+        font: inherit;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 0.52rem 0.9rem;
+        cursor: pointer;
+      }
+
+      .details-btn:hover {
+        filter: brightness(1.08);
+      }
+
+      .pred-modal[hidden] {
+        display: none;
+      }
+
+      .pred-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(2, 6, 23, 0.72);
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+      }
+
+      .pred-modal-dialog {
+        width: min(1050px, 97vw);
+        max-height: 92vh;
+        overflow: auto;
+        border-radius: 0.9rem;
+        border: 1px solid rgba(148, 163, 184, 0.45);
+        background: #f8fafc;
+        color: #0f172a;
+        padding: 1rem;
+      }
+
+      .pred-modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.7rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .pred-modal-title {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 800;
+      }
+
+      .pred-modal-close {
+        border: none;
+        border-radius: 999px;
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+        background: #e2e8f0;
+        color: #334155;
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+
+      .pred-modal-winner {
+        display: inline-block;
+        border-radius: 999px;
+        background: #16a34a;
+        color: #ffffff;
+        font-size: 0.88rem;
+        font-weight: 700;
+        padding: 0.32rem 0.7rem;
+        margin-bottom: 0.8rem;
+      }
+
+      .pred-modal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 0.8rem;
+      }
+
+      .pred-person-card {
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
+        background: #ffffff;
+        padding: 0.8rem;
+      }
+
+      .pred-person-title {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        font-weight: 800;
+      }
+
+      .pred-pill {
+        display: inline-block;
+        border-radius: 999px;
+        background: #6366f1;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 0.2rem 0.55rem;
+        margin-bottom: 0.45rem;
+      }
+
+      .pred-text-block {
+        margin-bottom: 0.45rem;
+        word-break: break-word;
+      }
+
+      .pred-list-title {
+        margin: 0.45rem 0 0.25rem;
+        font-weight: 800;
+      }
+
+      .pred-list {
+        margin: 0;
+        padding-left: 1.1rem;
       }
 
       .empty {
@@ -977,10 +1105,98 @@
                   </span>
                 </td>
                 <td>
-                  {% if m.market_url %}
-                  <a class="link" href="{{ m.market_url }}" target="_blank" rel="noopener noreferrer">Open</a>
-                  {% else %}
-                  -
+                  {% set pr = m.prediction_result or {} %}
+                  {% set pa = pr.get("PersonA") if pr else None %}
+                  {% set pb = pr.get("PersonB") if pr else None %}
+                  <div class="link-stack">
+                    {% if m.market_url %}
+                    <a class="link" href="{{ m.market_url }}" target="_blank" rel="noopener noreferrer">Open</a>
+                    {% else %}
+                    <span>-</span>
+                    {% endif %}
+                    {% if pa and pb %}
+                    <button
+                      type="button"
+                      class="details-btn"
+                      data-modal-source="pred-detail-{{ m.id }}"
+                      data-modal-title="{{ m.title }}"
+                    >
+                      View Details
+                    </button>
+                    {% endif %}
+                  </div>
+                  {% if pa and pb %}
+                  <div id="pred-detail-{{ m.id }}" class="pred-detail-source" hidden>
+                    <div class="pred-modal-winner">Predicted Winner: {{ m.predicted_winner or '-' }}</div>
+                    <div class="pred-modal-grid">
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">{{ pa.get("Name") or "PersonA" }}</h4>
+                        <div class="pred-pill">{{ pa.get("WinPercentage") or "-" }}%</div>
+                        <div class="pred-text-block"><b>Details:</b> {{ pa.get("Details") or "-" }}</div>
+                        <div class="pred-text-block"><b>Points:</b> {{ pa.get("MyPoints") or "-" }}</div>
+                        {% set pa_house = pa.get("planetInfoHouseWise") or [] %}
+                        {% if pa_house %}
+                        <div class="pred-list-title">Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in pa_house %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set pa_lord = pa.get("HouseLordInAnotherHouse") or [] %}
+                        {% if pa_lord %}
+                        <div class="pred-list-title">House Lord In Another House</div>
+                        <ul class="pred-list">
+                          {% for item in pa_lord %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set pa_transit = pa.get("TransitplanetInfoHouseWise") or [] %}
+                        {% if pa_transit %}
+                        <div class="pred-list-title">Transit Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in pa_transit %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                      </section>
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">{{ pb.get("Name") or "PersonB" }}</h4>
+                        <div class="pred-pill">{{ pb.get("WinPercentage") or "-" }}%</div>
+                        <div class="pred-text-block"><b>Details:</b> {{ pb.get("Details") or "-" }}</div>
+                        <div class="pred-text-block"><b>Points:</b> {{ pb.get("MyPoints") or "-" }}</div>
+                        {% set pb_house = pb.get("planetInfoHouseWise") or [] %}
+                        {% if pb_house %}
+                        <div class="pred-list-title">Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in pb_house %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set pb_lord = pb.get("HouseLordInAnotherHouse") or [] %}
+                        {% if pb_lord %}
+                        <div class="pred-list-title">House Lord In Another House</div>
+                        <ul class="pred-list">
+                          {% for item in pb_lord %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set pb_transit = pb.get("TransitplanetInfoHouseWise") or [] %}
+                        {% if pb_transit %}
+                        <div class="pred-list-title">Transit Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in pb_transit %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                      </section>
+                    </div>
+                  </div>
                   {% endif %}
                 </td>
               </tr>
@@ -1322,6 +1538,16 @@
       {% endif %}
     </div>
 
+    <div id="predDetailsModal" class="pred-modal" hidden>
+      <div class="pred-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="predDetailsTitle">
+        <div class="pred-modal-head">
+          <h3 id="predDetailsTitle" class="pred-modal-title">Match Details</h3>
+          <button type="button" class="pred-modal-close" id="predDetailsCloseBtn" aria-label="Close">x</button>
+        </div>
+        <div id="predDetailsBody"></div>
+      </div>
+    </div>
+
     <script>
       const button = document.getElementById("resolveBtn");
       if (button) {
@@ -1346,6 +1572,62 @@
           }
         });
       }
+
+      const predDetailsModal = document.getElementById("predDetailsModal");
+      const predDetailsBody = document.getElementById("predDetailsBody");
+      const predDetailsTitle = document.getElementById("predDetailsTitle");
+      const predDetailsCloseBtn = document.getElementById("predDetailsCloseBtn");
+      const detailsButtons = document.querySelectorAll(".details-btn");
+
+      function closePredDetailsModal() {
+        if (!predDetailsModal) {
+          return;
+        }
+        predDetailsModal.hidden = true;
+        document.body.style.overflow = "";
+      }
+
+      function openPredDetailsModal(title, html) {
+        if (!predDetailsModal || !predDetailsBody || !predDetailsTitle) {
+          return;
+        }
+        predDetailsTitle.textContent = title || "Match Details";
+        predDetailsBody.innerHTML = html || "";
+        predDetailsModal.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+
+      if (predDetailsCloseBtn) {
+        predDetailsCloseBtn.addEventListener("click", closePredDetailsModal);
+      }
+
+      if (predDetailsModal) {
+        predDetailsModal.addEventListener("click", (event) => {
+          if (event.target === predDetailsModal) {
+            closePredDetailsModal();
+          }
+        });
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && predDetailsModal && !predDetailsModal.hidden) {
+          closePredDetailsModal();
+        }
+      });
+
+      detailsButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const sourceId = btn.dataset.modalSource;
+          if (!sourceId) {
+            return;
+          }
+          const source = document.getElementById(sourceId);
+          if (!source) {
+            return;
+          }
+          openPredDetailsModal(btn.dataset.modalTitle || "Match Details", source.innerHTML);
+        });
+      });
 
       const predictForm = document.getElementById("predictForm");
       const predictLoader = document.getElementById("predictLoader");
