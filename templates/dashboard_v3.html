@@ -333,6 +333,24 @@
         border-radius: 0.5rem;
         padding: 0.28rem 0.4rem;
         font-size: 0.78rem;
+        width: 100%;
+      }
+
+      .pred-row > span:last-child {
+        justify-self: end;
+      }
+
+      .pred-row > span:nth-child(2) {
+        min-width: 0;
+      }
+
+      .pred-row > span:nth-child(2) > span,
+      .pred-row > span:nth-child(2) {
+        display: inline-block;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .pred-row .pred-label {
