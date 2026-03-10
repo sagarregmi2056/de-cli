@@ -861,15 +861,11 @@ def _market_matches_month(market: Dict[str, Any], month_filter: str) -> bool:
     if _market_month_key(market) != month_filter:
         return False
 
-    current_month = dt.date.today().strftime("%Y-%m")
-    if month_filter != current_month:
-        return True
-
-    # For current month views, show progress from today onward.
+    # Only include predictions created on/after the 5th of the month.
     market_date = _market_date_key(market)
     if not market_date:
         return False
-    return market_date >= dt.date.today()
+    return market_date.day >= 5
 
 
 def _created_datetime_key(market: Dict[str, Any]) -> dt.datetime:
