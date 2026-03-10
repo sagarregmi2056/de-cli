@@ -443,7 +443,7 @@ def _infer_outcome_from_prices(payload: Dict[str, Any]) -> Tuple[str, Optional[s
         return "open", None, "no_prices"
 
     if all(abs(p - 0.5) <= 0.03 for p in clean_prices.values()):
-        return "void", None, "flat_fifty_fifty"
+        return "open", None, "flat_fifty_fifty"
 
     winner_name, winner_price = max(clean_prices.items(), key=lambda pair: pair[1])
     if winner_price >= RESOLVED_HIGH:
@@ -581,7 +581,7 @@ def _evaluate_market(doc: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     if state == "void":
-        prediction_status = "void"
+        prediction_status = "pending"
     elif state == "resolved":
         if expected_outcome and resolved_outcome:
             prediction_status = "won" if _norm(expected_outcome) == _norm(resolved_outcome) else "lost"
@@ -591,7 +591,7 @@ def _evaluate_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         prediction_status = "pending"
 
     now = dt.datetime.utcnow()
-    resolved_at = now if state in {"resolved", "void"} else None
+    resolved_at = now if state == "resolved" else None
 
     return {
         "state": state,
