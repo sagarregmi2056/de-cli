@@ -743,6 +743,10 @@ def _build_summary(markets: List[Dict[str, Any]]) -> Dict[str, Any]:
         "resolved": 0,
         "win_rate": None,
         "invested": 0,
+        "aligned": 0,
+        "aligned_total": 0,
+        "aligned_rate": None,
+        "aligned_won": 0,
     }
 
     for market in markets:
@@ -753,9 +757,27 @@ def _build_summary(markets: List[Dict[str, Any]]) -> Dict[str, Any]:
         if market.get("is_invested"):
             summary["invested"] += 1
 
+        api_a = _safe_float(market.get("candidate_a_prob"))
+        api_b = _safe_float(market.get("candidate_b_prob"))
+        hist_a = _safe_float(market.get("historical_team_a_win_pct"))
+        hist_b = _safe_float(market.get("historical_team_b_win_pct"))
+        if api_a is None or api_b is None or hist_a is None or hist_b is None:
+            continue
+        if api_a == api_b or hist_a == hist_b:
+            continue
+        summary["aligned_total"] += 1
+        api_side = "A" if api_a >= api_b else "B"
+        hist_side = "A" if hist_a >= hist_b else "B"
+        if api_side == hist_side:
+            summary["aligned"] += 1
+            if status == "won":
+                summary["aligned_won"] += 1
+
     summary["resolved"] = summary["won"] + summary["lost"]
     if summary["resolved"] > 0:
         summary["win_rate"] = round((summary["won"] / summary["resolved"]) * 100, 2)
+    if summary["aligned_total"] > 0:
+        summary["aligned_rate"] = round((summary["aligned"] / summary["aligned_total"]) * 100, 2)
 
     return summary
 
