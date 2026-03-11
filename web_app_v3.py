@@ -574,11 +574,23 @@ def _evaluate_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         outcomes = _extract_outcomes(doc.get("raw_event") or {})
 
     state, resolved_outcome, signal = _extract_resolution(payload)
-    expected_outcome = _match_expected_outcome(
-        predicted_name=str(predicted.get("winner_name") or ""),
-        predicted_side=predicted.get("winner_side"),
-        outcomes=outcomes,
-    )
+    expected_outcome = None
+    if str(doc.get("type") or "") == "teams":
+        team_a, team_b = _extract_team_names(doc, predicted)
+        winner_side = predicted.get("winner_side")
+        if winner_side in {"A", "B"}:
+            team_pick = team_a if winner_side == "A" else team_b
+            expected_outcome = _match_expected_outcome(
+                predicted_name=str(team_pick or ""),
+                predicted_side=None,
+                outcomes=outcomes,
+            )
+    if not expected_outcome:
+        expected_outcome = _match_expected_outcome(
+            predicted_name=str(predicted.get("winner_name") or ""),
+            predicted_side=predicted.get("winner_side"),
+            outcomes=outcomes,
+        )
 
     if state == "void":
         prediction_status = "pending"
@@ -747,6 +759,7 @@ def _build_summary(markets: List[Dict[str, Any]]) -> Dict[str, Any]:
         "aligned_total": 0,
         "aligned_rate": None,
         "aligned_won": 0,
+        "aligned_lost": 0,
     }
 
     for market in markets:
@@ -772,6 +785,8 @@ def _build_summary(markets: List[Dict[str, Any]]) -> Dict[str, Any]:
             summary["aligned"] += 1
             if status == "won":
                 summary["aligned_won"] += 1
+            elif status == "lost":
+                summary["aligned_lost"] += 1
 
     summary["resolved"] = summary["won"] + summary["lost"]
     if summary["resolved"] > 0:
