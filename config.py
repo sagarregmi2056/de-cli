@@ -21,6 +21,9 @@ PREDICTION_API_URL = os.getenv(
     "PREDICTION_API_URL", "https://de.ideapreneurnepal.com.np/prediction"
 )
 PREDICTION_API_TOKEN = os.getenv("PREDICTION_API_TOKEN", "VyUwnQK2EN")
+TEAM_COMPARISON_API_URL = os.getenv(
+    "TEAM_COMPARISON_API_URL", "https://de.ideapreneurnepal.com.np/team-comparison"
+)
 
 # Simple keyword-based type detection (mirrors DEBot config)
 ONE_V_ONE_KEYWORDS = [

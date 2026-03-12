@@ -39,7 +39,7 @@ from gemini_clients import (
 from geo_enricher import enrich_structured_event
 from market_processor import _build_prediction_payload
 from markets_scanner import classify_event_type
-from prediction_client import get_prediction
+from prediction_client import get_prediction, get_team_comparison
 from web_app import _extract_event_info_from_url, _fetch_event_data, _infer_api_event_type
 
 
@@ -173,6 +173,101 @@ def _safe_float(value: Any) -> Optional[float]:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _normalize_person(person: Dict[str, Any], person_type: str = "player") -> Optional[Dict[str, Any]]:
+    if not isinstance(person, dict):
+        return None
+    name = str(person.get("name") or "").strip()
+    birth_date = str(person.get("birth_date") or "").strip()
+    birth_place = str(person.get("birth_place") or "").strip()
+    birth_country = str(person.get("birth_country") or "").strip()
+    birth_timezone = str(person.get("birth_timezone") or "").strip()
+    lat = person.get("lat")
+    lon = person.get("lon")
+    lat_dir = str(person.get("lat_dir") or "").strip()
+    lon_dir = str(person.get("lon_dir") or "").strip()
+
+    if not name or not birth_date or birth_date.lower() == "unknown":
+        return None
+    if not birth_place or not birth_country or not birth_timezone:
+        return None
+    if lat is None or lon is None or not lat_dir or not lon_dir:
+        return None
+
+    return {
+        "name": name,
+        "birth_date": birth_date,
+        "birth_time": person.get("birth_time"),
+        "birth_place": birth_place,
+        "birth_country": birth_country,
+        "birth_timezone": birth_timezone,
+        "lat": lat,
+        "lon": lon,
+        "lat_dir": lat_dir,
+        "lon_dir": lon_dir,
+        "gender": person.get("gender", "unknown"),
+        "person_type": person_type,
+    }
+
+
+def _collect_team_members(team_data: Dict[str, Any]) -> List[Dict[str, Any]]:
+    members: List[Dict[str, Any]] = []
+    if not isinstance(team_data, dict):
+        return members
+
+    for key, ptype in (
+        ("captain", "captain"),
+        ("coach", "coach"),
+    ):
+        person = team_data.get(key)
+        normalized = _normalize_person(person, ptype)
+        if normalized:
+            members.append(normalized)
+
+    for list_key in ("players", "members", "team_members", "squad", "roster", "key_players"):
+        raw_list = team_data.get(list_key)
+        if isinstance(raw_list, list):
+            for person in raw_list:
+                normalized = _normalize_person(person, "player")
+                if normalized:
+                    members.append(normalized)
+
+    return members
+
+
+def _build_team_comparison_payload(structured: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    if not isinstance(structured, dict):
+        return None
+
+    candidates = structured.get("candidates", [])
+    if not isinstance(candidates, list) or len(candidates) < 2:
+        return None
+
+    team_a_data = candidates[0] if isinstance(candidates[0], dict) else {}
+    team_b_data = candidates[1] if isinstance(candidates[1], dict) else {}
+
+    team_a_members = _collect_team_members(team_a_data)
+    team_b_members = _collect_team_members(team_b_data)
+
+    if not team_a_members or not team_b_members:
+        return None
+
+    take = min(len(team_a_members), len(team_b_members))
+    team_a_members = team_a_members[:take]
+    team_b_members = team_b_members[:take]
+
+    event = structured.get("event") if isinstance(structured.get("event"), dict) else {}
+    if not event:
+        return None
+
+    return {
+        "event": event,
+        "players_and_coaches": {
+            "team_a": team_a_members,
+            "team_b": team_b_members,
+        },
+    }
 
 
 def _as_list(value: Any) -> List[Any]:
@@ -1087,8 +1182,10 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
 
     event_json = json.dumps(raw_event)
     if market_type == "teams":
+        print("[GEMINI] Requesting team data (captain, coach, roster)")
         structured = teams_client.generate_text(event_json)
     else:
+        print("[GEMINI] Requesting 1v1 data")
         structured = one_v_one_client.generate_text(event_json)
 
     if not structured:
@@ -1096,17 +1193,23 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
 
     structured_event_type = structured.get("event_type")
     if structured_event_type == "teams" and market_type != "teams":
+        print("[GEMINI] Re-running teams client due to event_type mismatch")
         structured = teams_client.generate_text(event_json)
         market_type = "teams"
 
     edge_case = {}
     if WEB_APP_V3_EDGE_CASE_ENABLED:
+        print("[GEMINI] Requesting edge case analysis")
         edge_case = edge_case_client.generate_text(event_json) or {}
+    print("[STRUCTURED] Keys:", list(structured.keys()) if isinstance(structured, dict) else type(structured))
+    if isinstance(structured, dict):
+        print("[STRUCTURED] Candidates count:", len(structured.get("candidates", []) or []))
     structured = enrich_structured_event(structured)
 
     payload = _build_prediction_payload(structured)
     if not payload:
         raise ValueError("Could not build valid prediction payload.")
+    print("[PREDICTIONS] Payload ready for prediction API")
 
     payload.setdefault("event", {})
     inferred_event_type = _infer_api_event_type(raw_event, structured, market_type)
@@ -1115,6 +1218,21 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
     prediction_result = get_prediction(payload)
     if not prediction_result:
         raise ValueError("Prediction API returned no result.")
+    print("[PREDICTIONS] Prediction API responded")
+
+    team_comparison_payload = None
+    team_comparison_result = None
+    if market_type == "teams":
+        team_comparison_payload = _build_team_comparison_payload(structured)
+        if team_comparison_payload:
+            try:
+                print("[TEAM-COMPARISON] Sending payload")
+                team_comparison_result = get_team_comparison(team_comparison_payload)
+                print("[TEAM-COMPARISON] Response received")
+            except Exception as e:
+                print(f"[TEAM-COMPARISON] Warning: failed to call team comparison API: {e}")
+        else:
+            print("[TEAM-COMPARISON] Warning: insufficient valid team members for comparison.")
 
     predicted = _extract_predicted_winner({"prediction_result": prediction_result})
     fallback_team_a, fallback_team_b = _extract_team_pair_from_structured(structured)
@@ -1170,6 +1288,8 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         "edge_case_risk_level": risk_level,
         "prediction_payload": payload,
         "prediction_result": prediction_result,
+        "team_comparison_payload": team_comparison_payload,
+        "team_comparison_result": team_comparison_result,
         "historical_prediction": historical_prediction,
         "token_ids": token_ids,
         "outcome_prices": outcome_prices,
@@ -1252,6 +1372,8 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         "predicted": predicted,
         "prediction_meta": set_doc.get("prediction_meta"),
         "historical_prediction": historical_prediction,
+        "team_comparison_payload": team_comparison_payload,
+        "team_comparison_result": team_comparison_result,
         "edge_case": edge_case,
         "saved_id": str(saved_id) if saved_id else None,
         "expected_outcome": expected_outcome,
