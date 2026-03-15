@@ -1259,20 +1259,85 @@
                     <div class="pred-text-block"><b>Total comparisons:</b> {{ tcr.get("total_comparisons") or '-' }}</div>
                     {% set comparisons = tcr.get("comparisons") or [] %}
                     {% if comparisons %}
-                    <div class="pred-list-title" style="margin-top:0.9rem;">Sample Comparisons</div>
-                    <ul class="pred-list">
-                      {% for comp in comparisons %}
-                      {% if loop.index <= 6 %}
-                      {% set ca = comp.get("PersonA") or {} %}
-                      {% set cb = comp.get("PersonB") or {} %}
-                      <li>
-                        {{ ca.get("Name") or "PersonA" }} ({{ ca.get("WinPercentage") or "-" }}%)
-                        vs
-                        {{ cb.get("Name") or "PersonB" }} ({{ cb.get("WinPercentage") or "-" }}%)
-                      </li>
-                      {% endif %}
-                      {% endfor %}
-                    </ul>
+                    <div class="pred-list-title" style="margin-top:0.9rem;">Team Comparisons</div>
+                    {% for comp in comparisons %}
+                    {% set ca = comp.get("PersonA") or {} %}
+                    {% set cb = comp.get("PersonB") or {} %}
+                    <div class="pred-modal-grid" style="margin-top:0.6rem;">
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">
+                          {{ ca.get("Name") or "PersonA" }}
+                          {% if comp.get("personA_type") %}<span style="font-size:0.75rem;color:#94a3b8;">({{ comp.get("personA_type") }})</span>{% endif %}
+                        </h4>
+                        <div class="pred-pill">{{ ca.get("WinPercentage") or "-" }}%</div>
+                        <div class="pred-text-block"><b>Details:</b> {{ ca.get("Details") or "-" }}</div>
+                        <div class="pred-text-block"><b>Points:</b> {{ ca.get("MyPoints") or "-" }}</div>
+                        {% set ca_house = ca.get("planetInfoHouseWise") or [] %}
+                        {% if ca_house %}
+                        <div class="pred-list-title">Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in ca_house %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set ca_lord = ca.get("HouseLordInAnotherHouse") or [] %}
+                        {% if ca_lord %}
+                        <div class="pred-list-title">House Lord In Another House</div>
+                        <ul class="pred-list">
+                          {% for item in ca_lord %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set ca_transit = ca.get("TransitplanetInfoHouseWise") or [] %}
+                        {% if ca_transit %}
+                        <div class="pred-list-title">Transit Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in ca_transit %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                      </section>
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">
+                          {{ cb.get("Name") or "PersonB" }}
+                          {% if comp.get("personB_type") %}<span style="font-size:0.75rem;color:#94a3b8;">({{ comp.get("personB_type") }})</span>{% endif %}
+                        </h4>
+                        <div class="pred-pill">{{ cb.get("WinPercentage") or "-" }}%</div>
+                        <div class="pred-text-block"><b>Details:</b> {{ cb.get("Details") or "-" }}</div>
+                        <div class="pred-text-block"><b>Points:</b> {{ cb.get("MyPoints") or "-" }}</div>
+                        {% set cb_house = cb.get("planetInfoHouseWise") or [] %}
+                        {% if cb_house %}
+                        <div class="pred-list-title">Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in cb_house %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set cb_lord = cb.get("HouseLordInAnotherHouse") or [] %}
+                        {% if cb_lord %}
+                        <div class="pred-list-title">House Lord In Another House</div>
+                        <ul class="pred-list">
+                          {% for item in cb_lord %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set cb_transit = cb.get("TransitplanetInfoHouseWise") or [] %}
+                        {% if cb_transit %}
+                        <div class="pred-list-title">Transit Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in cb_transit %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                      </section>
+                    </div>
+                    {% endfor %}
                     {% endif %}
                   </div>
                   {% endif %}
