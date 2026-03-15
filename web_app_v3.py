@@ -12,6 +12,7 @@ Goals:
 from __future__ import annotations
 
 import datetime as dt
+import re
 import hmac
 import json
 import os
@@ -175,6 +176,15 @@ def _safe_float(value: Any) -> Optional[float]:
         return None
 
 
+def _is_unknown_value(value: str) -> bool:
+    if not value:
+        return True
+    lowered = value.strip().lower()
+    if lowered in {"unknown", "n/a", "na", "none", "null"}:
+        return True
+    return lowered.startswith("unknown")
+
+
 def _normalize_person(person: Dict[str, Any], person_type: str = "player") -> Optional[Dict[str, Any]]:
     if not isinstance(person, dict):
         return None
@@ -188,17 +198,29 @@ def _normalize_person(person: Dict[str, Any], person_type: str = "player") -> Op
     lat_dir = str(person.get("lat_dir") or "").strip()
     lon_dir = str(person.get("lon_dir") or "").strip()
 
-    if not name or not birth_date or birth_date.lower() == "unknown":
+    if not name or _is_unknown_value(birth_date):
         return None
-    if not birth_place or not birth_country or not birth_timezone:
+    if _is_unknown_value(birth_country):
+        return None
+    if _is_unknown_value(birth_timezone):
         return None
     if lat is None or lon is None or not lat_dir or not lon_dir:
         return None
 
+    normalized_type = person_type
+    if normalized_type == "captain":
+        normalized_type = "player"
+    if normalized_type not in {"candidate", "team_member", "participant", "player", "opponent", "coach"}:
+        normalized_type = "player"
+
+    birth_time = person.get("birth_time")
+    if isinstance(birth_time, str) and birth_time.strip().lower() == "unknown":
+        birth_time = None
+
     return {
         "name": name,
         "birth_date": birth_date,
-        "birth_time": person.get("birth_time"),
+        "birth_time": birth_time,
         "birth_place": birth_place,
         "birth_country": birth_country,
         "birth_timezone": birth_timezone,
@@ -207,7 +229,7 @@ def _normalize_person(person: Dict[str, Any], person_type: str = "player") -> Op
         "lat_dir": lat_dir,
         "lon_dir": lon_dir,
         "gender": person.get("gender", "unknown"),
-        "person_type": person_type,
+        "person_type": normalized_type,
     }
 
 
@@ -236,7 +258,7 @@ def _collect_team_members(team_data: Dict[str, Any]) -> List[Dict[str, Any]]:
     return members
 
 
-def _build_team_comparison_payload(structured: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def _build_team_comparison_payload(structured: Dict[str, Any], event_type: str) -> Optional[Dict[str, Any]]:
     if not isinstance(structured, dict):
         return None
 
@@ -253,13 +275,13 @@ def _build_team_comparison_payload(structured: Dict[str, Any]) -> Optional[Dict[
     if not team_a_members or not team_b_members:
         return None
 
-    take = min(len(team_a_members), len(team_b_members))
-    team_a_members = team_a_members[:take]
-    team_b_members = team_b_members[:take]
+    print(f"[TEAM-COMPARISON] Valid members: team_a={len(team_a_members)} team_b={len(team_b_members)}")
 
     event = structured.get("event") if isinstance(structured.get("event"), dict) else {}
     if not event:
         return None
+    event = dict(event)
+    event.setdefault("event_type", event_type)
 
     return {
         "event": event,
@@ -330,6 +352,13 @@ def _normalize_historical_prediction(
     fallback_a: str,
     fallback_b: str,
 ) -> Dict[str, Any]:
+    if isinstance(raw, dict) and raw.get("_raw_text"):
+        raw = str(raw.get("_raw_text") or "")
+    if isinstance(raw, str):
+        parsed = _parse_historical_from_text(raw, fallback_a, fallback_b)
+        if not parsed:
+            return {}
+        raw = parsed
     if not isinstance(raw, dict):
         return {}
 
@@ -383,6 +412,60 @@ def _normalize_historical_prediction(
         "sources": sources,
         "insufficient_data": insufficient_data,
         "generated_at": dt.datetime.utcnow(),
+    }
+
+
+def _parse_historical_from_text(text: str, fallback_a: str, fallback_b: str) -> Dict[str, Any]:
+    if not text:
+        return {}
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    a_pct = None
+    b_pct = None
+    for line in lines:
+        pct_match = re.search(r"(\d+(?:\.\d+)?)\s*%", line)
+        if not pct_match:
+            continue
+        pct = _safe_float(pct_match.group(1))
+        if pct is None:
+            continue
+        lower = line.lower()
+        if fallback_a and fallback_a.lower() in lower:
+            a_pct = pct
+        elif fallback_b and fallback_b.lower() in lower:
+            b_pct = pct
+        if a_pct is not None and b_pct is not None:
+            break
+
+    if a_pct is None or b_pct is None:
+        pct_values = re.findall(r"(\d+(?:\.\d+)?)\s*%", text)
+        if len(pct_values) >= 2:
+            a_pct = a_pct if a_pct is not None else _safe_float(pct_values[0])
+            b_pct = b_pct if b_pct is not None else _safe_float(pct_values[1])
+
+    if a_pct is None or b_pct is None:
+        return {}
+
+    winner = ""
+    winner_match = re.search(r"Predicted Winner:\s*([^\n\r]+)", text, re.IGNORECASE)
+    if winner_match:
+        winner = winner_match.group(1).strip()
+
+    confidence = ""
+    conf_match = re.search(r"Confidence:\s*([^\n\r]+)", text, re.IGNORECASE)
+    if conf_match:
+        confidence = conf_match.group(1).strip()
+
+    return {
+        "team_a_name": fallback_a or "Team A",
+        "team_b_name": fallback_b or "Team B",
+        "team_a_win_pct": a_pct,
+        "team_b_win_pct": b_pct,
+        "predicted_winner": winner,
+        "confidence": confidence or "Medium",
+        "reasoning_summary": text[:1200],
+        "historical_factors": [],
+        "sources": [],
+        "insufficient_data": False,
     }
 
 
@@ -452,28 +535,66 @@ def _extract_predicted_winner(doc: Dict[str, Any]) -> Dict[str, Any]:
     a_prob = _safe_float(person_a.get("WinPercentage")) or 0.0
     b_prob = _safe_float(person_b.get("WinPercentage")) or 0.0
 
-    winner_name = ""
-    winner_prob = 0.0
-    winner_side = None
+    if a_name or b_name or a_prob or b_prob:
+        winner_name = ""
+        winner_prob = 0.0
+        winner_side = None
 
-    if a_prob > b_prob:
-        winner_name = a_name
-        winner_prob = a_prob
-        winner_side = "A"
-    elif b_prob > a_prob:
-        winner_name = b_name
-        winner_prob = b_prob
-        winner_side = "B"
+        if a_prob > b_prob:
+            winner_name = a_name
+            winner_prob = a_prob
+            winner_side = "A"
+        elif b_prob > a_prob:
+            winner_name = b_name
+            winner_prob = b_prob
+            winner_side = "B"
+
+        return {
+            "person_a_name": a_name,
+            "person_b_name": b_name,
+            "person_a_prob": a_prob,
+            "person_b_prob": b_prob,
+            "winner_name": winner_name,
+            "winner_prob": winner_prob,
+            "winner_side": winner_side,
+            "gap": abs(a_prob - b_prob),
+        }
+
+    team_result = doc.get("team_comparison_result") or {}
+    team_a_prob = _safe_float(team_result.get("teamA_avg_percentage"))
+    team_b_prob = _safe_float(team_result.get("teamB_avg_percentage"))
+    if team_a_prob is not None and team_b_prob is not None:
+        team_a_name, team_b_name = _extract_team_names(
+            doc, {"person_a_name": "Team A", "person_b_name": "Team B"}
+        )
+        if team_a_prob >= team_b_prob:
+            winner_name = team_a_name
+            winner_prob = team_a_prob
+            winner_side = "A"
+        else:
+            winner_name = team_b_name
+            winner_prob = team_b_prob
+            winner_side = "B"
+        return {
+            "person_a_name": team_a_name,
+            "person_b_name": team_b_name,
+            "person_a_prob": team_a_prob,
+            "person_b_prob": team_b_prob,
+            "winner_name": winner_name,
+            "winner_prob": winner_prob,
+            "winner_side": winner_side,
+            "gap": abs(team_a_prob - team_b_prob),
+        }
 
     return {
-        "person_a_name": a_name,
-        "person_b_name": b_name,
-        "person_a_prob": a_prob,
-        "person_b_prob": b_prob,
-        "winner_name": winner_name,
-        "winner_prob": winner_prob,
-        "winner_side": winner_side,
-        "gap": abs(a_prob - b_prob),
+        "person_a_name": "",
+        "person_b_name": "",
+        "person_a_prob": 0.0,
+        "person_b_prob": 0.0,
+        "winner_name": "",
+        "winner_prob": 0.0,
+        "winner_side": None,
+        "gap": 0.0,
     }
 
 
@@ -834,6 +955,7 @@ def _serialize_market(doc: Dict[str, Any]) -> Dict[str, Any]:
         "historical_predicted_winner": historical_prediction.get("predicted_winner"),
         "historical_confidence": historical_prediction.get("confidence"),
         "prediction_result": doc.get("prediction_result") or {},
+        "team_comparison_result": doc.get("team_comparison_result") or {},
         "created_at": created_at,
         "updated_at": doc.get("updated_at"),
     }
@@ -1164,6 +1286,135 @@ def _load_market_data(limit: int, auto_resolve: bool) -> Tuple[List[Dict[str, An
     return docs, markets, summary, resolve_counts
 
 
+def _build_prediction_view_from_doc(doc: Dict[str, Any], url: Optional[str] = None) -> Dict[str, Any]:
+    raw_event = doc.get("raw_event") or {}
+    structured = doc.get("structured_event") or {}
+    market_type = str(doc.get("type") or "unknown")
+    prediction_result = doc.get("prediction_result") or {}
+    team_comparison_result = doc.get("team_comparison_result") or {}
+    historical_prediction = doc.get("historical_prediction") or {}
+    edge_case = doc.get("edge_case") or {}
+
+    predicted = _extract_predicted_winner(doc)
+    fallback_team_a, fallback_team_b = _extract_team_pair_from_structured(structured)
+
+    expected_outcome = None
+    predicted_market_odds = None
+    prediction_meta = doc.get("prediction_meta") or {}
+    if prediction_meta:
+        expected_outcome = prediction_meta.get("expected_outcome")
+        predicted_market_odds = prediction_meta.get("predicted_market_odds")
+    if not expected_outcome:
+        expected_outcome = (doc.get("resolution_v3") or {}).get("expected_outcome")
+    if predicted_market_odds is None and expected_outcome:
+        outcome_prices = doc.get("outcome_prices") or extract_outcome_prices_from_event(raw_event) or {}
+        predicted_market_odds = _find_price_for_outcome(outcome_prices, expected_outcome)
+
+    person_info = []
+    if prediction_result:
+        person_info = [
+            {
+                "label": "PersonA",
+                "name": prediction_result.get("PersonA", {}).get("Name"),
+                "win_pct": _safe_float(prediction_result.get("PersonA", {}).get("WinPercentage")) or 0.0,
+                "details": prediction_result.get("PersonA", {}).get("Details"),
+            },
+            {
+                "label": "PersonB",
+                "name": prediction_result.get("PersonB", {}).get("Name"),
+                "win_pct": _safe_float(prediction_result.get("PersonB", {}).get("WinPercentage")) or 0.0,
+                "details": prediction_result.get("PersonB", {}).get("Details"),
+            },
+        ]
+
+    teams_info = []
+    structured_candidates = structured.get("candidates", [])
+    if isinstance(structured_candidates, list):
+        for idx, team in enumerate(structured_candidates):
+            if not isinstance(team, dict):
+                continue
+            teams_info.append(
+                {
+                    "team_name": team.get("team_name") or f"Team {idx + 1}",
+                    "captain": team.get("captain", {}).get("name")
+                    if isinstance(team.get("captain"), dict)
+                    else None,
+                    "coach": team.get("coach", {}).get("name")
+                    if isinstance(team.get("coach"), dict)
+                    else None,
+                }
+            )
+
+    team_comparison_summary = None
+    if market_type == "teams" and team_comparison_result:
+        tcr = team_comparison_result
+        team_a_name = fallback_team_a or "Team A"
+        team_b_name = fallback_team_b or "Team B"
+        team_a_pct = _safe_float(tcr.get("teamA_avg_percentage"))
+        team_b_pct = _safe_float(tcr.get("teamB_avg_percentage"))
+        winner_side = tcr.get("overall_winner")
+        winner_name = None
+        winner_pct = _safe_float(tcr.get("winner_percentage"))
+        if winner_side == "teamA":
+            winner_name = team_a_name
+            if winner_pct is None:
+                winner_pct = team_a_pct
+        elif winner_side == "teamB":
+            winner_name = team_b_name
+            if winner_pct is None:
+                winner_pct = team_b_pct
+        gap = None
+        if team_a_pct is not None and team_b_pct is not None:
+            gap = abs(team_a_pct - team_b_pct)
+        team_comparison_summary = {
+            "team_a_name": team_a_name,
+            "team_b_name": team_b_name,
+            "team_a_pct": team_a_pct,
+            "team_b_pct": team_b_pct,
+            "winner_name": winner_name,
+            "winner_pct": winner_pct,
+            "total_comparisons": tcr.get("total_comparisons"),
+            "gap": gap,
+        }
+        if team_comparison_summary.get("winner_name"):
+            predicted = {
+                "winner_name": team_comparison_summary.get("winner_name"),
+                "winner_prob": team_comparison_summary.get("winner_pct"),
+                "gap": team_comparison_summary.get("gap"),
+                "winner_side": "A" if winner_side == "teamA" else "B" if winner_side == "teamB" else None,
+            }
+        if team_a_pct is not None and team_b_pct is not None:
+            person_info = [
+                {"label": "Team A", "name": team_a_name, "win_pct": team_a_pct, "details": None},
+                {"label": "Team B", "name": team_b_name, "win_pct": team_b_pct, "details": None},
+            ]
+
+    source_url = (prediction_meta.get("source_url") if isinstance(prediction_meta, dict) else None) or url
+
+    return {
+        "market_type": market_type,
+        "market_title": raw_event.get("title") or doc.get("title"),
+        "market_description": raw_event.get("description") or doc.get("description"),
+        "slug": doc.get("slug") or raw_event.get("slug"),
+        "prediction_result": prediction_result,
+        "predicted": predicted,
+        "prediction_meta": {
+            **(prediction_meta if isinstance(prediction_meta, dict) else {}),
+            "source_url": source_url,
+        },
+        "historical_prediction": historical_prediction,
+        "team_comparison_payload": doc.get("team_comparison_payload"),
+        "team_comparison_result": team_comparison_result,
+        "team_comparison_summary": team_comparison_summary,
+        "edge_case": edge_case,
+        "saved_id": str(doc.get("_id")) if doc.get("_id") else None,
+        "expected_outcome": expected_outcome,
+        "predicted_market_odds": predicted_market_odds,
+        "person_info": person_info,
+        "teams_info": teams_info,
+    }
+
+
 def _predict_from_url(url: str) -> Dict[str, Any]:
     event_info = _extract_event_info_from_url(url)
     event_id = event_info.get("event_id")
@@ -1171,6 +1422,23 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
 
     if not event_id and not slug:
         raise ValueError("Could not extract event ID or slug from URL.")
+
+    coll = get_db_v3().markets
+    cached_doc = None
+    if event_id:
+        event_ids = {event_id, str(event_id)}
+        try:
+            event_ids.add(int(event_id))
+        except (TypeError, ValueError):
+            pass
+        cached_doc = coll.find_one({"source": "polymarket", "source_event_id": {"$in": list(event_ids)}})
+    if not cached_doc and slug:
+        cached_doc = coll.find_one({"source": "polymarket", "slug": slug})
+    if not cached_doc:
+        cached_doc = coll.find_one({"source": "polymarket", "prediction_meta.source_url": url})
+    if cached_doc:
+        print("[CACHE] Using saved prediction from DB.")
+        return _build_prediction_view_from_doc(cached_doc, url)
 
     raw_event = _fetch_event_data(event_id=event_id, slug=slug)
     if not raw_event:
@@ -1204,37 +1472,49 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
     print("[STRUCTURED] Keys:", list(structured.keys()) if isinstance(structured, dict) else type(structured))
     if isinstance(structured, dict):
         print("[STRUCTURED] Candidates count:", len(structured.get("candidates", []) or []))
+        if market_type == "teams":
+            for idx, team in enumerate(structured.get("candidates", []) or []):
+                if not isinstance(team, dict):
+                    continue
+                players = team.get("players")
+                count = len(players) if isinstance(players, list) else 0
+                print(f"[STRUCTURED] Team {idx + 1} players listed:", count)
     structured = enrich_structured_event(structured)
 
-    payload = _build_prediction_payload(structured)
-    if not payload:
-        raise ValueError("Could not build valid prediction payload.")
-    print("[PREDICTIONS] Payload ready for prediction API")
-
-    payload.setdefault("event", {})
-    inferred_event_type = _infer_api_event_type(raw_event, structured, market_type)
-    payload["event"]["event_type"] = inferred_event_type
-
-    prediction_result = get_prediction(payload)
-    if not prediction_result:
-        raise ValueError("Prediction API returned no result.")
-    print("[PREDICTIONS] Prediction API responded")
-
+    payload = None
+    prediction_result = None
     team_comparison_payload = None
     team_comparison_result = None
-    if market_type == "teams":
-        team_comparison_payload = _build_team_comparison_payload(structured)
-        if team_comparison_payload:
-            try:
-                print("[TEAM-COMPARISON] Sending payload")
-                team_comparison_result = get_team_comparison(team_comparison_payload)
-                print("[TEAM-COMPARISON] Response received")
-            except Exception as e:
-                print(f"[TEAM-COMPARISON] Warning: failed to call team comparison API: {e}")
-        else:
-            print("[TEAM-COMPARISON] Warning: insufficient valid team members for comparison.")
 
-    predicted = _extract_predicted_winner({"prediction_result": prediction_result})
+    inferred_event_type = _infer_api_event_type(raw_event, structured, market_type)
+
+    if market_type == "teams":
+        team_comparison_payload = _build_team_comparison_payload(structured, inferred_event_type)
+        if not team_comparison_payload:
+            raise ValueError("Could not build valid team-comparison payload.")
+        try:
+            print("[TEAM-COMPARISON] Sending payload")
+            team_comparison_result = get_team_comparison(team_comparison_payload)
+            if not team_comparison_result:
+                raise ValueError("Team-comparison API returned no result.")
+            print("[TEAM-COMPARISON] Response received")
+        except Exception as e:
+            raise ValueError(f"Team-comparison API failed: {e}") from e
+    else:
+        payload = _build_prediction_payload(structured)
+        if not payload:
+            raise ValueError("Could not build valid prediction payload.")
+        print("[PREDICTIONS] Payload ready for prediction API")
+
+        payload.setdefault("event", {})
+        payload["event"]["event_type"] = inferred_event_type
+
+        prediction_result = get_prediction(payload)
+        if not prediction_result:
+            raise ValueError("Prediction API returned no result.")
+        print("[PREDICTIONS] Prediction API responded")
+
+    predicted = _extract_predicted_winner({"prediction_result": prediction_result or {}})
     fallback_team_a, fallback_team_b = _extract_team_pair_from_structured(structured)
 
     historical_prediction: Dict[str, Any] = {}
@@ -1261,12 +1541,15 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
     outcome_prices = extract_outcome_prices_from_event(raw_event) or {}
 
     outcomes = [str(k) for k in outcome_prices.keys()]
-    expected_outcome = _match_expected_outcome(
-        predicted_name=predicted.get("winner_name") or "",
-        predicted_side=predicted.get("winner_side"),
-        outcomes=outcomes,
-    )
-    predicted_market_odds = _find_price_for_outcome(outcome_prices, expected_outcome)
+    expected_outcome = None
+    predicted_market_odds = None
+    if prediction_result:
+        expected_outcome = _match_expected_outcome(
+            predicted_name=predicted.get("winner_name") or "",
+            predicted_side=predicted.get("winner_side"),
+            outcomes=outcomes,
+        )
+        predicted_market_odds = _find_price_for_outcome(outcome_prices, expected_outcome)
 
     now = dt.datetime.utcnow()
     has_edge_case = bool(edge_case.get("has_edge_case", False))
@@ -1330,20 +1613,22 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         resolution = _evaluate_market(saved)
         _update_resolution_status(coll, saved_id, resolution)
 
-    person_info = [
-        {
-            "label": "PersonA",
-            "name": prediction_result.get("PersonA", {}).get("Name"),
-            "win_pct": _safe_float(prediction_result.get("PersonA", {}).get("WinPercentage")) or 0.0,
-            "details": prediction_result.get("PersonA", {}).get("Details"),
-        },
-        {
-            "label": "PersonB",
-            "name": prediction_result.get("PersonB", {}).get("Name"),
-            "win_pct": _safe_float(prediction_result.get("PersonB", {}).get("WinPercentage")) or 0.0,
-            "details": prediction_result.get("PersonB", {}).get("Details"),
-        },
-    ]
+    person_info = []
+    if prediction_result:
+        person_info = [
+            {
+                "label": "PersonA",
+                "name": prediction_result.get("PersonA", {}).get("Name"),
+                "win_pct": _safe_float(prediction_result.get("PersonA", {}).get("WinPercentage")) or 0.0,
+                "details": prediction_result.get("PersonA", {}).get("Details"),
+            },
+            {
+                "label": "PersonB",
+                "name": prediction_result.get("PersonB", {}).get("Name"),
+                "win_pct": _safe_float(prediction_result.get("PersonB", {}).get("WinPercentage")) or 0.0,
+                "details": prediction_result.get("PersonB", {}).get("Details"),
+            },
+        ]
 
     teams_info = []
     structured_candidates = structured.get("candidates", [])
@@ -1363,6 +1648,50 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
                 }
             )
 
+    team_comparison_summary = None
+    if market_type == "teams" and team_comparison_result:
+        tcr = team_comparison_result
+        team_a_name = fallback_team_a or "Team A"
+        team_b_name = fallback_team_b or "Team B"
+        team_a_pct = _safe_float(tcr.get("teamA_avg_percentage"))
+        team_b_pct = _safe_float(tcr.get("teamB_avg_percentage"))
+        winner_side = tcr.get("overall_winner")
+        winner_name = None
+        winner_pct = _safe_float(tcr.get("winner_percentage"))
+        if winner_side == "teamA":
+            winner_name = team_a_name
+            if winner_pct is None:
+                winner_pct = team_a_pct
+        elif winner_side == "teamB":
+            winner_name = team_b_name
+            if winner_pct is None:
+                winner_pct = team_b_pct
+        gap = None
+        if team_a_pct is not None and team_b_pct is not None:
+            gap = abs(team_a_pct - team_b_pct)
+        team_comparison_summary = {
+            "team_a_name": team_a_name,
+            "team_b_name": team_b_name,
+            "team_a_pct": team_a_pct,
+            "team_b_pct": team_b_pct,
+            "winner_name": winner_name,
+            "winner_pct": winner_pct,
+            "total_comparisons": tcr.get("total_comparisons"),
+            "gap": gap,
+        }
+        if team_comparison_summary.get("winner_name"):
+            predicted = {
+                "winner_name": team_comparison_summary.get("winner_name"),
+                "winner_prob": team_comparison_summary.get("winner_pct"),
+                "gap": team_comparison_summary.get("gap"),
+                "winner_side": "A" if winner_side == "teamA" else "B" if winner_side == "teamB" else None,
+            }
+        if team_a_pct is not None and team_b_pct is not None:
+            person_info = [
+                {"label": "Team A", "name": team_a_name, "win_pct": team_a_pct, "details": None},
+                {"label": "Team B", "name": team_b_name, "win_pct": team_b_pct, "details": None},
+            ]
+
     return {
         "market_type": market_type,
         "market_title": raw_event.get("title"),
@@ -1374,6 +1703,7 @@ def _predict_from_url(url: str) -> Dict[str, Any]:
         "historical_prediction": historical_prediction,
         "team_comparison_payload": team_comparison_payload,
         "team_comparison_result": team_comparison_result,
+        "team_comparison_summary": team_comparison_summary,
         "edge_case": edge_case,
         "saved_id": str(saved_id) if saved_id else None,
         "expected_outcome": expected_outcome,

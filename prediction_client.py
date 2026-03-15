@@ -75,7 +75,10 @@ def get_prediction(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 continue
 
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            print("[TEAM-COMPARISON] Response:")
+            print(json.dumps(data, indent=2, ensure_ascii=True))
+            return data
         except requests.exceptions.HTTPError as e:
             last_error = e
             status_code = e.response.status_code if e.response is not None else None

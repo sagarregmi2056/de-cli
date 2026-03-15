@@ -335,3 +335,15 @@ class HistoricalPredictionGeminiClient(BaseGeminiClient):
           "insufficient_data": false
         }
         """
+
+    def generate_text(self, event_data: str, max_retries: int = 3) -> Dict[str, Any]:
+        try:
+            return super().generate_text(event_data, max_retries=max_retries)
+        except Exception as e:
+            print(f"[HISTORICAL] Warning: JSON parse failed, returning raw text. Error: {e}")
+            # Best-effort fallback: return raw text so caller can parse.
+            message = str(e)
+            if "Response:" in message:
+                _, tail = message.split("Response:", 1)
+                message = tail.strip()
+            return {"_raw_text": message}
