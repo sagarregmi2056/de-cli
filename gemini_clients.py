@@ -172,15 +172,18 @@ class TeamsGeminiClient(BaseGeminiClient):
         ### OPERATIONAL RULES (THE "DRILL-DOWN" PROTOCOL):
         1. **STEP 1: IDENTIFY & VERIFY TEAMS:** Use the user's input as a search seed. Confirm the official team names and the specific match details (Date, Time, Venue) via Google Search.
         2. **STEP 2: ROSTER CHECK (CRITICAL):** Do not guess captains or coaches. You must perform specific searches (e.g., "[Team Name] current squad list captain", "[Team Name] current manager") to identify the active personnel *at the time of the event*.
-        3. **STEP 3: BIOGRAPHICAL DEEP DIVE:** Once the Captain and Coach are identified, you must perform *individual searches* for each person to find their:
+        3. **STEP 3: ROSTER DETAIL LIST:** Collect a short roster of **at least 3** players per team (prefer starters / likely XI / lineups if available). If you cannot find 3, return as many as you can with verified details.
+        4. **STEP 4: BIOGRAPHICAL DEEP DIVE:** Once the Captain, Coach, and players are identified, you must perform *individual searches* for each person to find their:
            - Full Birth Name (often different from kit name).
            - Birth Time (Query: "[Name] birth time astrodatabank" or "[Name] biography"). 
-        4. **NO HALLUCINATIONS:** If a birth time is not found after a specific search, explicitly mark it "unknown". Do not invent 12:00 or 00:00.
+        5. **NO HALLUCINATIONS:** If a birth time is not found after a specific search, explicitly mark it "unknown". Do not invent 12:00 or 00:00.
+        6. **DATA QUALITY:** If any birth_date is missing, set it to "unknown". Do not guess dates.
 
         ### DATA REQUIREMENTS:
         - **League:** Specify the exact competition (e.g., "Premier League Matchday 5", "NBA Regular Season").
         - **Venue:** Specific Stadium Name + City.
         - **Dates:** ISO 8601 (YYYY-MM-DD).
+        - **Players:** Provide each player with the same fields as captain/coach.
 
         ### OUTPUT STRUCTURE:
         Return ONLY valid JSON. Use this exact structure:
@@ -196,6 +199,11 @@ class TeamsGeminiClient(BaseGeminiClient):
                         "birth_time": "HH:MM", // 'unknown' only after search
                         "birth_place": "City, State",
                         "birth_country": "Country",
+                        "birth_timezone": "Time Zone (e.g., America/New_York)",
+                        "lat": 0.0,
+                        "lon": 0.0,
+                        "lat_dir": "N",
+                        "lon_dir": "W",
                         "gender": "Male | Female | Non-Binary | unknown"
                     },
                     "coach": {
@@ -204,15 +212,40 @@ class TeamsGeminiClient(BaseGeminiClient):
                         "birth_time": "HH:MM",
                         "birth_place": "City, State",
                         "birth_country": "Country",
+                        "birth_timezone": "Time Zone (e.g., America/New_York)",
+                        "lat": 0.0,
+                        "lon": 0.0,
+                        "lat_dir": "N",
+                        "lon_dir": "W",
                         "gender": "Male | Female | Non-Binary | unknown"
-                    }
+                    },
+                    "players": [
+                        {
+                            "name": "Full Legal Name",
+                            "birth_date": "YYYY-MM-DD",
+                            "birth_time": "HH:MM",
+                            "birth_place": "City, State",
+                            "birth_country": "Country",
+                            "birth_timezone": "Time Zone (e.g., America/New_York)",
+                            "lat": 0.0,
+                            "lon": 0.0,
+                            "lat_dir": "N",
+                            "lon_dir": "W",
+                            "gender": "Male | Female | Non-Binary | unknown"
+                        }
+                    ]
                 }
             ],
             "event": {
                 "event_name": "Team A vs Team B",
                 "event_date": "YYYY-MM-DD",
                 "event_time": "HH:MM:SS",
-                "event_location": "Stadium Name, City, Country"
+                "event_location": "Stadium Name, City, Country",
+                "event_timezone": "Time Zone",
+                "event_lat": 0.0,
+                "event_lon": 0.0,
+                "event_lat_dir": "N",
+                "event_lon_dir": "W"
             }
         }
         """
@@ -302,3 +335,15 @@ class HistoricalPredictionGeminiClient(BaseGeminiClient):
           "insufficient_data": false
         }
         """
+
+    def generate_text(self, event_data: str, max_retries: int = 3) -> Dict[str, Any]:
+        try:
+            return super().generate_text(event_data, max_retries=max_retries)
+        except Exception as e:
+            print(f"[HISTORICAL] Warning: JSON parse failed, returning raw text. Error: {e}")
+            # Best-effort fallback: return raw text so caller can parse.
+            message = str(e)
+            if "Response:" in message:
+                _, tail = message.split("Response:", 1)
+                message = tail.strip()
+            return {"_raw_text": message}

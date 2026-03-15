@@ -1136,13 +1136,15 @@
                   {% set pr = m.prediction_result or {} %}
                   {% set pa = pr.get("PersonA") if pr else None %}
                   {% set pb = pr.get("PersonB") if pr else None %}
+                  {% set tcr = m.team_comparison_result or {} %}
+                  {% set tcr_has_data = (tcr.get("teamA_avg_percentage") is not none) or (tcr.get("teamB_avg_percentage") is not none) or (tcr.get("comparisons") and tcr.get("comparisons")|length > 0) %}
                   <div class="link-stack">
                     {% if m.market_url %}
                     <a class="link" href="{{ m.market_url }}" target="_blank" rel="noopener noreferrer">Open</a>
                     {% else %}
                     <span>-</span>
                     {% endif %}
-                    {% if pa and pb %}
+                    {% if (pa and pb) or tcr_has_data %}
                     <button
                       type="button"
                       class="details-btn"
@@ -1224,6 +1226,119 @@
                         {% endif %}
                       </section>
                     </div>
+                  </div>
+                  {% elif tcr_has_data %}
+                  {% set t_a_avg = tcr.get("teamA_avg_percentage") %}
+                  {% set t_b_avg = tcr.get("teamB_avg_percentage") %}
+                  <div id="pred-detail-{{ m.id }}" class="pred-detail-source" hidden>
+                    <div class="pred-modal-winner">Predicted Winner: {{ m.predicted_winner or '-' }}</div>
+                    <div class="pred-modal-grid">
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">{{ m.team_a or 'Team A' }}</h4>
+                        <div class="pred-pill">
+                          {% if t_a_avg is not none %}
+                          {{ "%.2f"|format(t_a_avg) }}%
+                          {% else %}
+                          -
+                          {% endif %}
+                        </div>
+                        <div class="pred-text-block"><b>Total Points:</b> {{ tcr.get("teamA_total_points") or '-' }}</div>
+                      </section>
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">{{ m.team_b or 'Team B' }}</h4>
+                        <div class="pred-pill">
+                          {% if t_b_avg is not none %}
+                          {{ "%.2f"|format(t_b_avg) }}%
+                          {% else %}
+                          -
+                          {% endif %}
+                        </div>
+                        <div class="pred-text-block"><b>Total Points:</b> {{ tcr.get("teamB_total_points") or '-' }}</div>
+                      </section>
+                    </div>
+                    <div class="pred-text-block"><b>Total comparisons:</b> {{ tcr.get("total_comparisons") or '-' }}</div>
+                    {% set comparisons = tcr.get("comparisons") or [] %}
+                    {% if comparisons %}
+                    <div class="pred-list-title" style="margin-top:0.9rem;">Team Comparisons</div>
+                    {% for comp in comparisons %}
+                    {% set ca = comp.get("PersonA") or {} %}
+                    {% set cb = comp.get("PersonB") or {} %}
+                    <div class="pred-modal-grid" style="margin-top:0.6rem;">
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">
+                          {{ ca.get("Name") or "PersonA" }}
+                          {% if comp.get("personA_type") %}<span style="font-size:0.75rem;color:#94a3b8;">({{ comp.get("personA_type") }})</span>{% endif %}
+                        </h4>
+                        <div class="pred-pill">{{ ca.get("WinPercentage") or "-" }}%</div>
+                        <div class="pred-text-block"><b>Details:</b> {{ ca.get("Details") or "-" }}</div>
+                        <div class="pred-text-block"><b>Points:</b> {{ ca.get("MyPoints") or "-" }}</div>
+                        {% set ca_house = ca.get("planetInfoHouseWise") or [] %}
+                        {% if ca_house %}
+                        <div class="pred-list-title">Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in ca_house %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set ca_lord = ca.get("HouseLordInAnotherHouse") or [] %}
+                        {% if ca_lord %}
+                        <div class="pred-list-title">House Lord In Another House</div>
+                        <ul class="pred-list">
+                          {% for item in ca_lord %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set ca_transit = ca.get("TransitplanetInfoHouseWise") or [] %}
+                        {% if ca_transit %}
+                        <div class="pred-list-title">Transit Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in ca_transit %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                      </section>
+                      <section class="pred-person-card">
+                        <h4 class="pred-person-title">
+                          {{ cb.get("Name") or "PersonB" }}
+                          {% if comp.get("personB_type") %}<span style="font-size:0.75rem;color:#94a3b8;">({{ comp.get("personB_type") }})</span>{% endif %}
+                        </h4>
+                        <div class="pred-pill">{{ cb.get("WinPercentage") or "-" }}%</div>
+                        <div class="pred-text-block"><b>Details:</b> {{ cb.get("Details") or "-" }}</div>
+                        <div class="pred-text-block"><b>Points:</b> {{ cb.get("MyPoints") or "-" }}</div>
+                        {% set cb_house = cb.get("planetInfoHouseWise") or [] %}
+                        {% if cb_house %}
+                        <div class="pred-list-title">Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in cb_house %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set cb_lord = cb.get("HouseLordInAnotherHouse") or [] %}
+                        {% if cb_lord %}
+                        <div class="pred-list-title">House Lord In Another House</div>
+                        <ul class="pred-list">
+                          {% for item in cb_lord %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                        {% set cb_transit = cb.get("TransitplanetInfoHouseWise") or [] %}
+                        {% if cb_transit %}
+                        <div class="pred-list-title">Transit Planet Info (House Wise)</div>
+                        <ul class="pred-list">
+                          {% for item in cb_transit %}
+                          <li>{{ item }}</li>
+                          {% endfor %}
+                        </ul>
+                        {% endif %}
+                      </section>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
                   </div>
                   {% endif %}
                 </td>
@@ -1436,6 +1551,35 @@
             <p class="kv"><b>Market:</b> {{ prediction_view.market_title }}</p>
             <p class="kv"><b>Event Type:</b> {{ prediction_view.api_event_type or prediction_view.market_type }}</p>
             <p class="kv"><b>Type:</b> {{ prediction_view.market_type }}</p>
+            {% if prediction_view.market_type == 'teams' and prediction_view.team_comparison_summary %}
+            {% set tcs = prediction_view.team_comparison_summary %}
+            <p class="kv"><b>Predicted winner:</b>
+              {% if tcs.winner_name %}
+              {{ tcs.winner_name }}{% if tcs.winner_pct is not none %} ({{ "%.2f"|format(tcs.winner_pct) }}%){% endif %}
+              {% else %}-{% endif %}
+            </p>
+            <p class="kv"><b>Prediction gap:</b>
+              {% if tcs.gap is not none %}
+              {{ "%.2f"|format(tcs.gap) }}
+              {% else %}
+              -
+              {% endif %}
+            </p>
+            <div class="score-grid" style="margin-top:0.7rem;">
+              {% if tcs.team_a_pct is not none %}
+              <div class="score-cell {{ 'winner' if tcs.winner_name == tcs.team_a_name else '' }}">
+                <strong>{{ tcs.team_a_name }}</strong>
+                <div>{{ "%.2f"|format(tcs.team_a_pct) }}%</div>
+              </div>
+              {% endif %}
+              {% if tcs.team_b_pct is not none %}
+              <div class="score-cell {{ 'winner' if tcs.winner_name == tcs.team_b_name else '' }}">
+                <strong>{{ tcs.team_b_name }}</strong>
+                <div>{{ "%.2f"|format(tcs.team_b_pct) }}%</div>
+              </div>
+              {% endif %}
+            </div>
+            {% else %}
             <p class="kv"><b>Predicted winner:</b> {{ prediction_view.predicted.winner_name }} ({{ "%.2f"|format(prediction_view.predicted.winner_prob) }}%)</p>
             <p class="kv"><b>Prediction gap:</b> {{ "%.2f"|format(prediction_view.predicted.gap) }}</p>
             <div class="score-grid" style="margin-top:0.7rem;">
@@ -1450,6 +1594,7 @@
               </div>
               {% endfor %}
             </div>
+            {% endif %}
           </div>
           <div class="card">
             <h3>Outcome Mapping</h3>
@@ -1465,10 +1610,47 @@
           </div>
           <div class="card">
             <h3>Model Output</h3>
+            {% if prediction_view.prediction_result and prediction_view.prediction_result.PersonA %}
             <p class="kv"><b>PersonA:</b> {{ prediction_view.prediction_result.PersonA.Name }} ({{ prediction_view.prediction_result.PersonA.WinPercentage }}%)</p>
             <p class="kv"><b>PersonB:</b> {{ prediction_view.prediction_result.PersonB.Name }} ({{ prediction_view.prediction_result.PersonB.WinPercentage }}%)</p>
+            {% else %}
+            <p class="kv">No 1v1 prediction output for team-comparison flow.</p>
+            {% endif %}
             <p class="kv"><b>Edge case:</b> {{ prediction_view.edge_case.risk_level if prediction_view.edge_case else 'None' }}</p>
           </div>
+          {% if prediction_view.team_comparison_result %}
+          <div class="card">
+            {% set tcr = prediction_view.team_comparison_result %}
+            {% set tcs = prediction_view.team_comparison_summary %}
+            {% set t_a_name = tcs.team_a_name if tcs else (prediction_view.teams_info[0].team_name if prediction_view.teams_info and prediction_view.teams_info|length > 0 else 'Team A') %}
+            {% set t_b_name = tcs.team_b_name if tcs else (prediction_view.teams_info[1].team_name if prediction_view.teams_info and prediction_view.teams_info|length > 1 else 'Team B') %}
+            {% set winner = tcr.overall_winner or '-' %}
+            <h3>Team Comparison</h3>
+            <p class="kv"><b>Winner:</b>
+              {% if winner == 'teamA' %}{{ t_a_name }}
+              {% elif winner == 'teamB' %}{{ t_b_name }}
+              {% else %}-{% endif %}
+            </p>
+            <p class="kv"><b>{{ t_a_name }} Avg:</b>
+              {% if tcs and tcs.team_a_pct is not none %}
+              {{ "%.2f"|format(tcs.team_a_pct) }}%
+              {% else %}
+              {{ tcr.teamA_avg_percentage or '-' }}%
+              {% endif %}
+            </p>
+            <p class="kv"><b>{{ t_b_name }} Avg:</b>
+              {% if tcs and tcs.team_b_pct is not none %}
+              {{ "%.2f"|format(tcs.team_b_pct) }}%
+              {% else %}
+              {{ tcr.teamB_avg_percentage or '-' }}%
+              {% endif %}
+            </p>
+            <p class="kv"><b>Total comparisons:</b> {{ tcr.total_comparisons or '-' }}</p>
+          </div>
+          <script>
+            console.log("Team Comparison Result", {{ prediction_view.team_comparison_result | tojson }});
+          </script>
+          {% endif %}
           <div class="card">
             <h3>Historical (Gemini)</h3>
             {% set hp = prediction_view.historical_prediction %}

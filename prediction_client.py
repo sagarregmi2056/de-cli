@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from config import PREDICTION_API_URL, PREDICTION_API_TOKEN
+from config import PREDICTION_API_URL, PREDICTION_API_TOKEN, TEAM_COMPARISON_API_URL
 
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
@@ -75,7 +75,10 @@ def get_prediction(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 continue
 
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            print("[TEAM-COMPARISON] Response:")
+            print(json.dumps(data, indent=2, ensure_ascii=True))
+            return data
         except requests.exceptions.HTTPError as e:
             last_error = e
             status_code = e.response.status_code if e.response is not None else None
@@ -117,6 +120,80 @@ def get_prediction(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if resp is not None:
         try:
             print(f"Prediction API error body: {resp.text}")
+        except Exception:
+            pass
+    return None
+
+
+def get_team_comparison(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    print("[TEAM-COMPARISON] Sending request to team comparison API")
+    print(f"[TEAM-COMPARISON] URL: {TEAM_COMPARISON_API_URL}")
+    print("[TEAM-COMPARISON] Payload:")
+    print(json.dumps(payload, indent=2, ensure_ascii=True))
+
+    headers = {
+        "Content-Type": "application/json",
+        "De-Token": PREDICTION_API_TOKEN,
+    }
+
+    max_attempts = PREDICTION_API_RETRIES + 1
+    last_error: Optional[Exception] = None
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = requests.post(
+                TEAM_COMPARISON_API_URL,
+                json=payload,
+                headers=headers,
+                timeout=PREDICTION_API_TIMEOUT_SECS,
+            )
+
+            if response.status_code in RETRYABLE_STATUS_CODES and attempt < max_attempts:
+                wait_secs = PREDICTION_API_RETRY_BACKOFF_SECS * attempt
+                print(
+                    f"[TEAM-COMPARISON] Attempt {attempt}/{max_attempts} got HTTP {response.status_code}. "
+                    f"Retrying in {wait_secs:.1f}s..."
+                )
+                time.sleep(wait_secs)
+                continue
+
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.HTTPError as e:
+            last_error = e
+            status_code = e.response.status_code if e.response is not None else None
+            if status_code in RETRYABLE_STATUS_CODES and attempt < max_attempts:
+                wait_secs = PREDICTION_API_RETRY_BACKOFF_SECS * attempt
+                print(
+                    f"[TEAM-COMPARISON] Attempt {attempt}/{max_attempts} failed with HTTP {status_code}. "
+                    f"Retrying in {wait_secs:.1f}s..."
+                )
+                time.sleep(wait_secs)
+                continue
+            break
+        except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+            last_error = e
+            if attempt < max_attempts:
+                wait_secs = PREDICTION_API_RETRY_BACKOFF_SECS * attempt
+                print(
+                    f"[TEAM-COMPARISON] Attempt {attempt}/{max_attempts} failed ({type(e).__name__}: {e}). "
+                    f"Retrying in {wait_secs:.1f}s..."
+                )
+                time.sleep(wait_secs)
+                continue
+            break
+        except requests.exceptions.RequestException as e:
+            last_error = e
+            break
+        except Exception as e:
+            last_error = e
+            break
+
+    print(f"Error in get_team_comparison after {max_attempts} attempt(s): {last_error}")
+    resp = getattr(last_error, "response", None)
+    if resp is not None:
+        try:
+            print(f"Team comparison API error body: {resp.text}")
         except Exception:
             pass
     return None
