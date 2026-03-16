@@ -70,8 +70,8 @@ def _is_password_hash(value: str) -> bool:
     return value.startswith(("pbkdf2:", "scrypt:", "argon2:"))
 
 
-def _load_auth_users() -> Dict[str, str]:
-    users: Dict[str, str] = {}
+def _load_auth_users() -> Dict[str, Dict[str, str]]:
+    users: Dict[str, Dict[str, str]] = {}
 
     users_json = (os.getenv("WEB_APP_V3_AUTH_USERS") or "").strip()
     if users_json:
@@ -80,20 +80,28 @@ def _load_auth_users() -> Dict[str, str]:
             if isinstance(parsed, dict):
                 for email, pwd in parsed.items():
                     email_norm = str(email or "").strip().lower()
-                    password = str(pwd or "")
-                    if email_norm and password:
-                        users[email_norm] = password
+                    if not email_norm:
+                        continue
+                    if isinstance(pwd, dict):
+                        password = str(pwd.get("password") or pwd.get("password_hash") or pwd.get("hash") or "")
+                        role = str(pwd.get("role") or "admin").strip().lower() or "admin"
+                    else:
+                        password = str(pwd or "")
+                        role = "admin"
+                    if password:
+                        users[email_norm] = {"password": password, "role": role}
         except Exception:
             pass
 
     single_email = (os.getenv("WEB_APP_V3_AUTH_EMAIL") or "").strip().lower()
     single_password_hash = (os.getenv("WEB_APP_V3_AUTH_PASSWORD_HASH") or "").strip()
     single_password = os.getenv("WEB_APP_V3_AUTH_PASSWORD")
+    single_role = (os.getenv("WEB_APP_V3_AUTH_ROLE") or "admin").strip().lower() or "admin"
     if single_email:
         if single_password_hash:
-            users[single_email] = single_password_hash
+            users[single_email] = {"password": single_password_hash, "role": single_role}
         elif single_password:
-            users[single_email] = single_password
+            users[single_email] = {"password": single_password, "role": single_role}
 
     return users
 
@@ -1721,12 +1729,21 @@ def _verify_login(email: str, password: str) -> bool:
     expected = AUTH_USERS.get(email.strip().lower())
     if not expected:
         return False
-    if _is_password_hash(expected):
+    expected_password = expected.get("password", "") if isinstance(expected, dict) else str(expected or "")
+    if not expected_password:
+        return False
+    if _is_password_hash(expected_password):
         try:
-            return check_password_hash(expected, password)
+            return check_password_hash(expected_password, password)
         except Exception:
             return False
-    return hmac.compare_digest(expected, password)
+    return hmac.compare_digest(expected_password, password)
+
+
+def _get_user_role(email: str) -> str:
+    expected = AUTH_USERS.get(email.strip().lower()) or {}
+    role = expected.get("role") if isinstance(expected, dict) else None
+    return str(role or "admin").strip().lower() or "admin"
 
 
 @app.before_request
@@ -1766,6 +1783,7 @@ def login():
             session.clear()
             session.permanent = True
             session["auth_email"] = email
+            session["auth_role"] = _get_user_role(email)
             return redirect(next_url)
         error = "Invalid email or password."
 
@@ -1811,6 +1829,7 @@ def _render_dashboard(
         recent_predictions=recent,
         auth_enabled=AUTH_ENABLED,
         auth_email=session.get("auth_email"),
+        auth_role=session.get("auth_role", "admin"),
     )
 
 
@@ -1887,6 +1906,9 @@ def predict_tab():
 
     prediction_view = None
     prediction_error = None
+
+    if session.get("auth_role") == "moderator":
+        return redirect(url_for("markets_tab"))
 
     if request.method == "POST":
         url = (request.form.get("url") or request.values.get("url") or "").strip()

@@ -897,7 +897,7 @@
             <button class="btn btn-primary" id="resolveBtn">Auto Resolve Now</button>
             {% if active_tab == 'analytics' %}
             <a class="btn btn-secondary" href="/analytics?auto_resolve=1{{ month_query }}">Refresh</a>
-            {% elif active_tab == 'predict' %}
+            {% elif active_tab == 'predict' and auth_role != 'moderator' %}
             <a class="btn btn-secondary" href="/predict?auto_resolve=1{{ month_query }}">Refresh</a>
             {% else %}
             <a class="btn btn-secondary" href="/?auto_resolve=1{{ month_query }}">Refresh</a>
@@ -908,7 +908,9 @@
         <div class="tabs">
           <a class="tab {{ 'active' if active_tab == 'markets' else '' }}" href="/?auto_resolve=1{{ month_query }}">Markets</a>
           <a class="tab {{ 'active' if active_tab == 'analytics' else '' }}" href="/analytics?auto_resolve=1{{ month_query }}">Analytics</a>
+          {% if auth_role != 'moderator' %}
           <a class="tab {{ 'active' if active_tab == 'predict' else '' }}" href="/predict?auto_resolve=1{{ month_query }}">Predict URL</a>
+          {% endif %}
         </div>
 
         <div class="stats">
@@ -988,7 +990,11 @@
           <h3>Predict a URL</h3>
           <p class="mini">Go to the Predict tab, paste the Polymarket link, and let Destiny Engine capture it.</p>
           <div class="plan-form-inner">
+            {% if auth_role != 'moderator' %}
             <a class="btn btn-primary" href="/predict{% if month_filter and month_filter != 'all' %}?month={{ month_filter }}{% endif %}">Go Predict</a>
+            {% else %}
+            <span class="muted">Predict access is restricted.</span>
+            {% endif %}
           </div>
         </div>
       </section>
